@@ -57,7 +57,7 @@ function createFilesAndData(products) {
           images[imgData.size] = imgName;
         });
 
-        productImages.push(images);
+        productImages.push(product.imgs.length > 0 ? images : null);
       });
 
       const productsWithImages = products.map((product, index) => {
