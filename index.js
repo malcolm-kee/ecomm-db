@@ -2,7 +2,9 @@ const path = require('path');
 const jsonServer = require('json-server');
 const server = jsonServer.create();
 const router = jsonServer.router(path.join(__dirname, 'build', 'db.json'));
-const middlewares = jsonServer.defaults();
+const middlewares = jsonServer.defaults({
+  static: path.join(__dirname, 'build', 'public')
+});
 
 const PORT = process.env.PORT || 3000;
 

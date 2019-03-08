@@ -1,5 +1,6 @@
 const fs = require('fs');
 const mkdirp = require('mkdirp');
+const { ncp } = require('ncp');
 const path = require('path');
 const rimraf = require('rimraf');
 
@@ -22,9 +23,23 @@ function clean() {
   });
 }
 
+function copyPublicFolder() {
+  return new Promise((fulfill, reject) => {
+    mkdirp('build/public', function afterCreatePublicFolder(error) {
+      if (error) return reject(error);
+
+      ncp('public', path.join(__dirname, 'build', 'public'), copyError => {
+        if (copyError) return reject(copyError);
+
+        fulfill();
+      });
+    });
+  });
+}
+
 function createFilesAndData(products) {
   return new Promise(function(fulfill, reject) {
-    mkdirp('build/images', function afterCreateImageFolder(error) {
+    mkdirp('build/public/images', function afterCreateImageFolder(error) {
       if (error) {
         return reject(error);
       }
@@ -34,7 +49,7 @@ function createFilesAndData(products) {
         product.imgs.forEach(function createImg(imgData) {
           const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.format}`;
           const writeStream = fs.createWriteStream(
-            path.resolve(__dirname, 'build', 'images', imgName)
+            path.resolve(__dirname, 'build', 'public', 'images', imgName)
           );
           writeStream.write(imgData.img.data);
           writeStream.end();
@@ -60,7 +75,7 @@ function buildDb(productDb) {
     fs.writeFile(
       path.resolve(__dirname, 'build', 'db.json'),
       JSON.stringify({
-        productDb
+        products: productDb
       }),
       'utf8',
       function afterBuildDb(err) {
@@ -78,6 +93,7 @@ function buildDb(productDb) {
 }
 
 clean()
+  .then(copyPublicFolder)
   .then(createProductDb)
   .then(createFilesAndData)
   .then(buildDb);
