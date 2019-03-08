@@ -96,4 +96,10 @@ clean()
   .then(copyPublicFolder)
   .then(createProductDb)
   .then(createFilesAndData)
-  .then(buildDb);
+  .then(buildDb)
+  .catch(function finalCatch(err) {
+    console.error('Error in finalCatch');
+    console.error('===================');
+    console.error(err);
+    console.error('===================');
+  });
