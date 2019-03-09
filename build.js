@@ -5,6 +5,8 @@ const path = require('path');
 const rimraf = require('rimraf');
 
 const createProductDb = require('./src/create-product-db');
+const createUserDb = require('./src/create-user-db');
+const createCommentDb = require('./src/create-comment-db');
 const kebabCase = require('./src/kebab-case');
 
 function clean() {
@@ -71,10 +73,14 @@ function createFilesAndData(products) {
 }
 
 function buildDb(productDb) {
+  const users = createUserDb(100);
+  const comments = createCommentDb(users);
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
       path.resolve(__dirname, 'build', 'db.json'),
       JSON.stringify({
+        comments,
+        users,
         products: productDb
       }),
       'utf8',
