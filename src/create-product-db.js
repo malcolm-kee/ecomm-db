@@ -86,10 +86,12 @@ function procesProductImage(imagePath) {
     getSharp(imagePath)
       .then(img => {
         const imgLarge = img.clone().resize(600, 600, {
-          fit: 'inside'
+          fit: 'contain',
+          background: 'rgb(255,255,255)'
         });
         const imgSmall = img.clone().resize(188, 188, {
-          fit: 'inside'
+          fit: 'contain',
+          background: 'rgb(255,255,255)'
         });
         return Promise.all([
           imgLarge
