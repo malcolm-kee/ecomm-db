@@ -74,7 +74,7 @@ function createFilesAndData(products) {
 
 function buildDb(productDb) {
   const users = createUserDb(100);
-  const comments = createCommentDb(users);
+  const comments = createCommentDb(productDb, users);
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
       path.resolve(__dirname, 'build', 'db.json'),

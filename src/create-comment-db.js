@@ -1,6 +1,5 @@
 const faker = require('faker');
 const getId = require('./get-id');
-const products = require('./products');
 
 function getCommentCount() {
   return faker.random.number({ min: 0, max: 10 });
@@ -14,7 +13,7 @@ function pickUser(users) {
   return users[userIndex];
 }
 
-module.exports = function createCommentDb(users) {
+module.exports = function createCommentDb(products, users) {
   return products
     .map(product => {
       const comments = [];
