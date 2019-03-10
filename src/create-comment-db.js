@@ -26,7 +26,8 @@ module.exports = function createCommentDb(users) {
           productId: product.id,
           userId: user.id,
           userName: user.name,
-          content: faker.lorem.sentence()
+          content: faker.lorem.sentence(),
+          createdOn: faker.date.past().getTime()
         });
       }
 
