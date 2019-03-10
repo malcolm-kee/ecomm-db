@@ -1,4 +1,5 @@
 const faker = require('faker');
+const getId = require('./get-id');
 const products = require('./products');
 
 function getCommentCount() {
@@ -21,6 +22,7 @@ module.exports = function createCommentDb(users) {
       for (let index = 0; index < getCommentCount(); index++) {
         const user = pickUser(users);
         comments.push({
+          id: getId(),
           productId: product.id,
           userId: user.id,
           userName: user.name,

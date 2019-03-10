@@ -4,16 +4,9 @@ const path = require('path');
 const request = require('request');
 const sharp = require('sharp');
 
+const getId = require('./get-id');
 const isUrl = require('./is-url');
 const products = require('./products');
-
-const getProductId = (function() {
-  let id = Date.now();
-
-  return function getId() {
-    return id++;
-  };
-})();
 
 function getProductImage() {
   function getImage(id) {
@@ -34,7 +27,7 @@ function getProductImage() {
 
 function createFakeProduct() {
   return {
-    id: getProductId(),
+    id: getId(),
     name: faker.commerce.productName(),
     descriptions: [faker.commerce.productAdjective(), faker.commerce.productAdjective()],
     image: getProductImage()

@@ -1,18 +1,11 @@
 const faker = require('faker');
-
-const getUserId = (function() {
-  let id = Date.now();
-
-  return function generateId() {
-    return id++;
-  };
-})();
+const getId = require('./get-id');
 
 function createUserProfile() {
   const firstName = faker.name.firstName();
   const lastName = faker.name.lastName();
   return {
-    id: getUserId(),
+    id: getId(),
     name: `${firstName} ${lastName}`,
     email: faker.internet.email(firstName, lastName),
     joinedDate: faker.date.past().getTime(),
