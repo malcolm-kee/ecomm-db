@@ -8,6 +8,14 @@ const getId = require('./get-id');
 const isUrl = require('./is-url');
 const products = require('./products');
 
+function getRandomInteger(max) {
+  return faker.random.number({
+    max,
+    min: 0,
+    precision: 1
+  });
+}
+
 function getProductImage() {
   function getImage(id) {
     switch (id) {
@@ -22,7 +30,7 @@ function getProductImage() {
     }
   }
 
-  return getImage(faker.random.number({ min: 0, max: 1, precision: 1 }));
+  return getImage(getRandomInteger(1));
 }
 
 function createFakeProduct() {
@@ -30,7 +38,9 @@ function createFakeProduct() {
     id: getId(),
     name: faker.commerce.productName(),
     descriptions: [faker.commerce.productAdjective(), faker.commerce.productAdjective()],
-    image: getProductImage()
+    image: getProductImage(),
+    department: faker.commerce.department(),
+    price: faker.commerce.price()
   };
 }
 
@@ -46,6 +56,17 @@ function createFakeProducts(count) {
   }
 
   return products;
+}
+
+function associateRelatedProducts(product, _, products) {
+  const productsInSameDepartment = products.filter(p => p.department === product.department);
+  const relatedProducts = Array.from(
+    { length: getRandomInteger(5) },
+    () => productsInSameDepartment[getRandomInteger(productsInSameDepartment.length - 1)].id
+  );
+  return Object.assign({}, product, {
+    related: relatedProducts.filter((p, index, array) => array.indexOf(p) === index)
+  });
 }
 
 function isFileExist(filePath) {
@@ -141,7 +162,9 @@ function processImages(product) {
 }
 
 module.exports = function createProductDb() {
-  const allProducts = products.concat(createFakeProducts(100));
+  const allProducts = products.concat(createFakeProducts(100)).map(associateRelatedProducts);
+  console.info('Created all products.');
+  console.info('Processing product images...');
   return Promise.all(allProducts.map(processImages)).then(images =>
     images.map((processedImgs, index) =>
       Object.assign({}, allProducts[index], { imgs: processedImgs })
