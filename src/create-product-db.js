@@ -59,7 +59,9 @@ function createFakeProducts(count) {
 }
 
 function associateRelatedProducts(product, _, products) {
-  const productsInSameDepartment = products.filter(p => p.department === product.department);
+  const productsInSameDepartment = products.filter(
+    p => p.department === product.department && p !== product
+  );
   const relatedProducts = Array.from(
     { length: getRandomInteger(5) },
     () => productsInSameDepartment[getRandomInteger(productsInSameDepartment.length - 1)].id
