@@ -63,7 +63,7 @@ function associateRelatedProducts(product, _, products) {
     p => p.department === product.department && p !== product
   );
   const relatedProducts = Array.from(
-    { length: getRandomInteger(5) },
+    { length: getRandomInteger(Math.min(productsInSameDepartment.length, 5)) },
     () => productsInSameDepartment[getRandomInteger(productsInSameDepartment.length - 1)].id
   );
   return Object.assign({}, product, {
