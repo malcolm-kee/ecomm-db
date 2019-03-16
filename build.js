@@ -4,10 +4,11 @@ const { ncp } = require('ncp');
 const path = require('path');
 const rimraf = require('rimraf');
 
+const kebabCase = require('./src/lib/kebab-case');
 const createProductDb = require('./src/create-product-db');
+const processBannerImages = require('./src/process-banner-images');
 const createUserDb = require('./src/create-user-db');
 const createCommentDb = require('./src/create-comment-db');
-const kebabCase = require('./src/kebab-case');
 
 function clean() {
   return new Promise(function(fulfill, reject) {
@@ -49,7 +50,9 @@ function createFilesAndData(products) {
       products.forEach(product => {
         const images = {};
         product.imgs.forEach(function createImg(imgData) {
-          const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.format}`;
+          const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.height}x${
+            imgData.img.info.width
+          }.${imgData.img.info.format}`;
           const writeStream = fs.createWriteStream(
             path.resolve(__dirname, 'build', 'public', 'images', imgName)
           );
@@ -67,7 +70,26 @@ function createFilesAndData(products) {
         return Object.assign({}, productData, { images: productImages[index] });
       });
 
-      fulfill(productsWithImages);
+      processBannerImages()
+        .then(bannerImages => {
+          bannerImages.forEach((bannerImage, bannerImgIndex) => {
+            bannerImage.images.forEach(image => {
+              const imgName = `banner-${bannerImgIndex}.${image.info.height}x${image.info.width}.${
+                image.info.format
+              }`;
+
+              const writeStream = fs.createWriteStream(
+                path.resolve(__dirname, 'build', 'public', 'images', imgName)
+              );
+              writeStream.write(image.data);
+              writeStream.end();
+            });
+          });
+        })
+        .then(() => {
+          fulfill(productsWithImages);
+        })
+        .catch(reject);
     });
   });
 }

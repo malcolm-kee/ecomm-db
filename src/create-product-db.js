@@ -1,27 +1,22 @@
 const faker = require('faker');
 const fs = require('fs');
 const path = require('path');
-const request = require('request');
-const sharp = require('sharp');
 
-const getId = require('./get-id');
-const isUrl = require('./is-url');
+const getId = require('./lib/get-id');
+const isUrl = require('./lib/is-url');
 const products = require('./products');
+const processImage = require('./process-image');
 
-const Image_Size = {
-  standard: {
-    w: 600,
-    h: 600
-  },
-  thumb: {
-    w: 188,
-    h: 188
-  },
-  blur: {
-    w: 5,
-    h: 5
-  }
-};
+/**
+ *
+ * @typedef {Object} Product
+ * @property {number} id
+ * @property {string} name
+ * @property {string[]} descriptions
+ * @property {string} image
+ * @property {string} department
+ * @property {string} price
+ */
 
 function getRandomInteger(max) {
   return faker.random.number({
@@ -48,6 +43,9 @@ function getProductImage() {
   return getImage(getRandomInteger(1));
 }
 
+/**
+ * @returns {Product}
+ */
 function createFakeProduct() {
   return {
     id: getId(),
@@ -73,6 +71,12 @@ function createFakeProducts(count) {
   return products;
 }
 
+/**
+ *
+ * @param {Product} product
+ * @param {*} _
+ * @param {Product[]} products
+ */
 function associateRelatedProducts(product, _, products) {
   const productsInSameDepartment = products.filter(
     p => p.department === product.department && p !== product
@@ -98,97 +102,66 @@ function isFileExist(filePath) {
   });
 }
 
-function getSharp(imagePath) {
-  return new Promise((fulfill, reject) => {
-    if (isUrl(imagePath)) {
-      request({ url: imagePath, encoding: null }, function afterRequest(err, res, bodyBuffer) {
-        if (err) return reject(err);
+const Image_Size = {
+  standard: {
+    w: 600,
+    h: 600
+  },
+  thumb: {
+    w: 188,
+    h: 188
+  }
+};
 
-        return fulfill(sharp(bodyBuffer));
-      });
-    } else {
-      return fulfill(sharp(imagePath));
+/**
+ *
+ * @param {string} imagePath
+ */
+function processProductImage(imagePath) {
+  return processImage(imagePath, [
+    {
+      width: Image_Size.standard.w,
+      height: Image_Size.standard.h,
+      format: 'jpg'
+    },
+    {
+      width: Image_Size.standard.w,
+      height: Image_Size.standard.h,
+      format: 'webp'
+    },
+    {
+      width: Image_Size.thumb.w,
+      height: Image_Size.thumb.h,
+      format: 'jpg'
+    },
+    {
+      width: Image_Size.thumb.w,
+      height: Image_Size.thumb.h,
+      format: 'webp'
+    },
+    {
+      width: Image_Size.standard.w,
+      height: Image_Size.standard.h,
+      format: 'jpg',
+      blur: true
+    },
+    {
+      width: Image_Size.thumb.w,
+      height: Image_Size.thumb.h,
+      format: 'jpg',
+      blur: true
     }
-  });
-}
-
-function procesProductImage(imagePath) {
-  return getSharp(imagePath).then(
-    /**
-     * @param {sharp.Sharp} img
-     */
-    function generateMultipleImageSizes(img) {
-      const imgLarge = img.clone().resize(Image_Size.standard.w, Image_Size.standard.h, {
-        fit: 'contain',
-        background: 'rgb(255,255,255)'
-      });
-      const imgSmall = img.clone().resize(Image_Size.thumb.w, Image_Size.thumb.h, {
-        fit: 'contain',
-        background: 'rgb(255,255,255)'
-      });
-      const imgMini = img.clone().resize(Image_Size.blur.w, Image_Size.blur.h, {
-        fit: 'contain',
-        background: 'rgb(255,255,255)',
-        kernel: 'cubic'
-      });
-      return Promise.all([
-        imgLarge
-          .clone()
-          .jpeg()
-          .toBuffer({
-            resolveWithObject: true
-          }),
-        imgLarge
-          .clone()
-          .webp()
-          .toBuffer({
-            resolveWithObject: true
-          }),
-        imgSmall
-          .clone()
-          .jpeg()
-          .toBuffer({
-            resolveWithObject: true
-          }),
-        imgSmall
-          .clone()
-          .webp()
-          .toBuffer({
-            resolveWithObject: true
-          }),
-        imgMini
-          .clone()
-          .jpeg({
-            quality: 1
-          })
-          .blur()
-          .resize(Image_Size.standard.w, Image_Size.standard.h, { kernel: 'cubic' })
-          .toBuffer({
-            resolveWithObject: true
-          }),
-        imgMini
-          .clone()
-          .jpeg({
-            quality: 1
-          })
-          .blur()
-          .resize(Image_Size.thumb.w, Image_Size.thumb.h, { kernel: 'cubic' })
-          .toBuffer({
-            resolveWithObject: true
-          })
-      ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
-        { size: 'standard', img: stdImg },
-        { size: 'webp', img: webpImg },
-        {
-          size: 'thumb-standard',
-          img: stdImgSmall
-        },
-        { size: 'thumb-webp', img: webpImgSmall },
-        { size: 'blur', img: imgBlur },
-        { size: 'thumb-blur', img: imgBlurSm }
-      ]);
-    }
-  );
+  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
+    { size: 'standard', img: stdImg },
+    { size: 'webp', img: webpImg },
+    {
+      size: 'thumbStandard',
+      img: stdImgSmall
+    },
+    { size: 'thumbWebp', img: webpImgSmall },
+    { size: 'blur', img: imgBlur },
+    { size: 'thumbBlur', img: imgBlurSm }
+  ]);
 }
 
 function processImages(product) {
@@ -198,7 +171,7 @@ function processImages(product) {
 
   return isFileExist(imagePath).then(imageExist => {
     if (imageExist) {
-      return procesProductImage(imagePath);
+      return processProductImage(imagePath);
     } else {
       return [];
     }
