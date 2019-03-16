@@ -40,7 +40,21 @@ function copyPublicFolder() {
   });
 }
 
+const IMAGE_PUBLIC_PATH = 'https://ecomm-db.herokuapp.com/images/';
+
 function createFilesAndData(products) {
+  function writeFileToImgFolder(fileName, data) {
+    const writeStream = fs.createWriteStream(
+      path.resolve(__dirname, 'build', 'public', 'images', fileName)
+    );
+    writeStream.write(data);
+    writeStream.end();
+  }
+
+  function mapImagePath(imageName) {
+    return `${IMAGE_PUBLIC_PATH}${imageName}`;
+  }
+
   return new Promise(function(fulfill, reject) {
     mkdirp('build/public/images', function afterCreateImageFolder(error) {
       if (error) {
@@ -53,11 +67,7 @@ function createFilesAndData(products) {
           const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.height}x${
             imgData.img.info.width
           }.${imgData.img.info.format}`;
-          const writeStream = fs.createWriteStream(
-            path.resolve(__dirname, 'build', 'public', 'images', imgName)
-          );
-          writeStream.write(imgData.img.data);
-          writeStream.end();
+          writeFileToImgFolder(imgName, imgData.img.data);
 
           images[imgData.size] = imgName;
         });
@@ -71,39 +81,42 @@ function createFilesAndData(products) {
       });
 
       processBannerImages()
-        .then(bannerImages => {
+        .then(function creatingBannerImages(bannerImages) {
+          const bannerImageNames = [];
           bannerImages.forEach((bannerImage, bannerImgIndex) => {
+            const imageMap = {};
             bannerImage.images.forEach(image => {
               const imgName = `banner-${bannerImgIndex}.${image.info.height}x${image.info.width}.${
                 image.info.format
               }`;
 
-              const writeStream = fs.createWriteStream(
-                path.resolve(__dirname, 'build', 'public', 'images', imgName)
-              );
-              writeStream.write(image.data);
-              writeStream.end();
+              writeFileToImgFolder(imgName, image.data);
+
+              imageMap[image.info.width] = mapImagePath(imgName);
             });
+            bannerImageNames.push(imageMap);
           });
+          return bannerImageNames;
         })
-        .then(() => {
-          fulfill(productsWithImages);
+        .then(bannerImages => {
+          fulfill({ banners: bannerImages, products: productsWithImages });
         })
         .catch(reject);
     });
   });
 }
 
-function buildDb(productDb) {
+function buildDb({ products, banners }) {
   const users = createUserDb(100);
-  const comments = createCommentDb(productDb, users);
+  const comments = createCommentDb(products, users);
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
       path.resolve(__dirname, 'build', 'db.json'),
       JSON.stringify({
+        banners,
         comments,
         users,
-        products: productDb
+        products
       }),
       'utf8',
       function afterBuildDb(err) {
