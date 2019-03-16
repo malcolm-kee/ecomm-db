@@ -8,6 +8,21 @@ const getId = require('./get-id');
 const isUrl = require('./is-url');
 const products = require('./products');
 
+const Image_Size = {
+  standard: {
+    w: 600,
+    h: 600
+  },
+  thumb: {
+    w: 188,
+    h: 188
+  },
+  blur: {
+    w: 5,
+    h: 5
+  }
+};
+
 function getRandomInteger(max) {
   return faker.random.number({
     max,
@@ -98,55 +113,82 @@ function getSharp(imagePath) {
 }
 
 function procesProductImage(imagePath) {
-  return new Promise((fulfill, reject) => {
-    getSharp(imagePath)
-      .then(img => {
-        const imgLarge = img.clone().resize(600, 600, {
-          fit: 'contain',
-          background: 'rgb(255,255,255)'
-        });
-        const imgSmall = img.clone().resize(188, 188, {
-          fit: 'contain',
-          background: 'rgb(255,255,255)'
-        });
-        return Promise.all([
-          imgLarge
-            .clone()
-            .jpeg()
-            .toBuffer({
-              resolveWithObject: true
-            }),
-          imgLarge
-            .clone()
-            .webp()
-            .toBuffer({
-              resolveWithObject: true
-            }),
-          imgSmall
-            .clone()
-            .jpeg()
-            .toBuffer({
-              resolveWithObject: true
-            }),
-          imgSmall
-            .clone()
-            .webp()
-            .toBuffer({
-              resolveWithObject: true
-            })
-        ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall]) => [
-          { size: 'standard', img: stdImg },
-          { size: 'webp', img: webpImg },
-          {
-            size: 'thumb-standard',
-            img: stdImgSmall
-          },
-          { size: 'thumb-webp', img: webpImgSmall }
-        ]);
-      })
-      .then(fulfill)
-      .catch(reject);
-  });
+  return getSharp(imagePath).then(
+    /**
+     * @param {sharp.Sharp} img
+     */
+    function generateMultipleImageSizes(img) {
+      const imgLarge = img.clone().resize(Image_Size.standard.w, Image_Size.standard.h, {
+        fit: 'contain',
+        background: 'rgb(255,255,255)'
+      });
+      const imgSmall = img.clone().resize(Image_Size.thumb.w, Image_Size.thumb.h, {
+        fit: 'contain',
+        background: 'rgb(255,255,255)'
+      });
+      const imgMini = img.clone().resize(Image_Size.blur.w, Image_Size.blur.h, {
+        fit: 'contain',
+        background: 'rgb(255,255,255)',
+        kernel: 'cubic'
+      });
+      return Promise.all([
+        imgLarge
+          .clone()
+          .jpeg()
+          .toBuffer({
+            resolveWithObject: true
+          }),
+        imgLarge
+          .clone()
+          .webp()
+          .toBuffer({
+            resolveWithObject: true
+          }),
+        imgSmall
+          .clone()
+          .jpeg()
+          .toBuffer({
+            resolveWithObject: true
+          }),
+        imgSmall
+          .clone()
+          .webp()
+          .toBuffer({
+            resolveWithObject: true
+          }),
+        imgMini
+          .clone()
+          .jpeg({
+            quality: 1
+          })
+          .blur()
+          .resize(Image_Size.standard.w, Image_Size.standard.h, { kernel: 'cubic' })
+          .toBuffer({
+            resolveWithObject: true
+          }),
+        imgMini
+          .clone()
+          .jpeg({
+            quality: 1
+          })
+          .blur()
+          .resize(Image_Size.thumb.w, Image_Size.thumb.h, { kernel: 'cubic' })
+          .toBuffer({
+            resolveWithObject: true
+          })
+      ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
+        { size: 'standard', img: stdImg },
+        { size: 'webp', img: webpImg },
+        {
+          size: 'thumb-standard',
+          img: stdImgSmall
+        },
+        { size: 'thumb-webp', img: webpImgSmall },
+        { size: 'blur', img: imgBlur },
+        { size: 'thumb-blur', img: imgBlurSm }
+      ]);
+    }
+  );
 }
 
 function processImages(product) {
