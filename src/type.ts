@@ -5,6 +5,7 @@ export interface ImageData {
   width: number;
   height: number;
   format: string;
+  blur: boolean;
 }
 
 export interface Product {
@@ -55,7 +56,7 @@ export interface ImageInfo {
 }
 
 export interface BannerInfo {
-  [key: number]: string;
+  [key: string]: string;
 }
 
 export interface ProductImageInfo {

@@ -52,11 +52,15 @@ async function writeImagesForBanner(banner: ImageInfo, index: number) {
   const writeFilesPromises: Promise<{}>[] = [];
 
   banner.images.forEach(image => {
-    const imgName = `banner-${index}.${image.height}x${image.width}.${image.format}`;
+    const imgName = `banner-${index}${image.blur ? '-blur' : ''}.${image.height}x${image.width}.${
+      image.format
+    }`;
 
     writeFilesPromises.push(writeFileToImgFolder(imgName, image.sharp));
 
-    imageMap[image.width] = mapImagePath(imgName);
+    const key = image.blur ? image.width + 'Blur' : image.width;
+
+    imageMap[key] = mapImagePath(imgName);
   });
 
   await Promise.all(writeFilesPromises);

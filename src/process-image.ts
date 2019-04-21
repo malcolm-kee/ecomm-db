@@ -7,6 +7,10 @@ const Image_Size = {
   blur: {
     w: 5,
     h: 5
+  },
+  largeBlur: {
+    w: 25,
+    h: 25
   }
 };
 
@@ -44,25 +48,34 @@ function generateImage(
       sharp,
       width,
       height,
-      format
+      format,
+      blur
     };
   }
 
-  const imgClone = img.clone().resize(Image_Size.blur.w, Image_Size.blur.h, {
-    fit,
-    background: 'rgb(255,255,255)',
-    kernel: 'cubic'
-  });
+  const imgClone = img
+    .clone()
+    .resize(
+      width > 2000 ? Image_Size.largeBlur.w : Image_Size.blur.w,
+      width > 2000 ? Image_Size.largeBlur.h : Image_Size.blur.h,
+      {
+        fit,
+        position,
+        background: 'rgb(255,255,255)',
+        kernel: 'cubic'
+      }
+    );
 
   const sharp = (format === 'jpg' ? imgClone.jpeg({ quality: 1 }) : imgClone.webp({ quality: 1 }))
     .blur()
-    .resize(width, height, { kernel: 'cubic' });
+    .resize(width, height, { kernel: 'cubic', position });
 
   return {
     sharp,
     width,
     height,
-    format
+    format,
+    blur
   };
 }
 
