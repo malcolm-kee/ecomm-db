@@ -1,32 +1,12 @@
 import faker from 'faker';
 import fs from 'fs';
 import path from 'path';
+import { numOfProducts } from './constants';
 import { getId } from './lib/get-id';
 import { isUrl } from './lib/is-url';
-import { products } from './products';
-
-import { numOfProducts } from './constants';
 import { processImage } from './process-image';
-
-/**
- *
- * @typedef {Object} Product
- * @property {number} id
- * @property {string} name
- * @property {string[]} descriptions
- * @property {string} image
- * @property {string} department
- * @property {string} price
- */
-
-interface Product {
-  id: number;
-  name: string;
-  descriptions: string[];
-  image: string;
-  department: string;
-  price: string;
-}
+import { products } from './products';
+import { ProcessedProduct, Product } from './type';
 
 function getRandomInteger(max: number) {
   return faker.random.number({
@@ -53,10 +33,7 @@ function getProductImage() {
   return getImage(getRandomInteger(1));
 }
 
-/**
- * @returns {Product}
- */
-function createFakeProduct() {
+function createFakeProduct(): Product {
   return {
     id: getId(),
     name: faker.commerce.productName(),
@@ -67,10 +44,6 @@ function createFakeProduct() {
   };
 }
 
-/**
- *
- * @param {number} count
- */
 function createFakeProducts(count: number) {
   const products = [];
 
@@ -151,7 +124,7 @@ function processProductImage(imagePath: string) {
       format: 'jpg',
       blur: true
     }
-  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]: string[]) => [
+  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
     { size: 'standard', img: stdImg },
     { size: 'webp', img: webpImg },
     {
@@ -178,7 +151,7 @@ function processImages(product: Product) {
   });
 }
 
-export function createProductDb() {
+export function createProductDb(): Promise<ProcessedProduct[]> {
   const allProducts = products
     .concat(createFakeProducts(numOfProducts))
     .map(associateRelatedProducts);

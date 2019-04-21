@@ -3,19 +3,19 @@ import mkdirp from 'mkdirp';
 import { ncp } from 'ncp';
 import path from 'path';
 import rimraf from 'rimraf';
-
-import { createProductDb } from './create-product-db';
-import { processBannerImages } from './process-banner-images';
-import { createUserDb } from './create-user-db';
-import { createCommentDb } from './create-comment-db';
-import { writeImageFiles } from './write-images-files';
 import {
+  imageOutputFolder,
   numOfUsers,
   outputFolder,
-  publicSrcPath,
   publicPath,
-  imageOutputFolder
+  publicSrcPath
 } from './constants';
+import { createCommentDb } from './create-comment-db';
+import { createProductDb } from './create-product-db';
+import { createUserDb } from './create-user-db';
+import { processBannerImages } from './process-banner-images';
+import { DbBanner, DbComment, DbProduct, DbUser } from './type';
+import { writeImageFiles } from './write-images-files';
 
 function clean() {
   return new Promise(function(fulfill, reject) {
@@ -61,7 +61,17 @@ function setupPublicFolder() {
   });
 }
 
-function buildDb({ products, banners, users, comments }) {
+function buildDb({
+  products,
+  banners,
+  users,
+  comments
+}: {
+  products: DbProduct[];
+  banners: DbBanner[];
+  users: DbUser[];
+  comments: DbComment[];
+}) {
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
       path.resolve(outputFolder, 'db.json'),
@@ -97,9 +107,9 @@ async function build() {
     ]);
     const comments = createCommentDb(products, users);
 
-    const { bannerImages, productsWithImages } = writeImageFiles(products, bannerImageData);
+    const { bannerInfos, productsWithImages } = writeImageFiles(products, bannerImageData);
 
-    await buildDb({ banners: bannerImages, products: productsWithImages, users, comments });
+    await buildDb({ banners: bannerInfos, products: productsWithImages, users, comments });
   } catch (err) {
     console.error(err);
   }

@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+const WebpackSourceMapSupport = require('webpack-source-map-support');
 
 /**
  * @type {webpack.Configuration}
@@ -28,5 +29,6 @@ module.exports = {
   externals: [nodeExternals()],
   node: {
     __dirname: false
-  }
+  },
+  plugins: [new WebpackSourceMapSupport()]
 };

@@ -1,7 +1,8 @@
 import glob from 'glob';
 import { processImage } from './process-image';
+import { ImageInfo } from './type';
 
-export function processBannerImages() {
+export function processBannerImages(): Promise<ImageInfo[]> {
   return new Promise((fulfill, reject) => {
     glob(__dirname + '/../images/banner**.jpg', function afterGlob(error, files) {
       if (error) return reject(error);

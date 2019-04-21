@@ -1,7 +1,8 @@
 import request from 'request';
-import sharp from 'sharp';
+import sharp, { Sharp } from 'sharp';
 
 import { isUrl } from './lib/is-url';
+import { GenerateImageOption } from './type';
 
 const Image_Size = {
   blur: {
@@ -10,12 +11,7 @@ const Image_Size = {
   }
 };
 
-/**
- *
- * @param {string} imagePath
- * @returns {Promise<sharp.Sharp>}
- */
-function getSharp(imagePath) {
+function getSharp(imagePath: string): Promise<Sharp> {
   return new Promise((fulfill, reject) => {
     if (isUrl(imagePath)) {
       request({ url: imagePath, encoding: null }, function afterRequest(err, res, bodyBuffer) {
@@ -42,12 +38,10 @@ function getSharp(imagePath) {
  * @property {'contain' | 'cover'} [fit]
  */
 
-/**
- *
- * @param {sharp.Sharp} img
- * @param {GenerateImageOption} options
- */
-function generateImage(img, { width, height, format, blur = false, fit = 'contain' }) {
+function generateImage(
+  img: Sharp,
+  { width, height, format, blur = false, fit = 'contain' }: GenerateImageOption
+) {
   if (!blur) {
     const imgClone = img.clone().resize(width, height, {
       fit,
@@ -77,12 +71,7 @@ function generateImage(img, { width, height, format, blur = false, fit = 'contai
   );
 }
 
-/**
- *
- * @param {string} imagePath
- * @param {GenerateImageOption[]} imageGenerationOptions
- */
-export function processImage(imagePath, imageGenerationOptions) {
+export function processImage(imagePath: string, imageGenerationOptions: GenerateImageOption[]) {
   return getSharp(imagePath).then(img =>
     Promise.all(imageGenerationOptions.map(option => generateImage(img, option)))
   );

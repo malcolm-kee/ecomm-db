@@ -1,7 +1,8 @@
 import faker from 'faker';
 import { getId } from './lib/get-id';
+import { User } from './type';
 
-function createUserProfile() {
+function createUserProfile(): User {
   const firstName = faker.name.firstName();
   const lastName = faker.name.lastName();
   return {
@@ -13,10 +14,7 @@ function createUserProfile() {
   };
 }
 
-/**
- * @param {number} userCount
- */
-export function createUserDb(userCount) {
+export function createUserDb(userCount: number) {
   const users = [];
   for (let index = 0; index < userCount; index++) {
     users.push(createUserProfile());

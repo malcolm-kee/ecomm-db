@@ -1,23 +1,23 @@
 import fs from 'fs';
 import path from 'path';
-
 import { imageOutputFolder, imagePublicPath } from './constants';
 import { kebabCase } from './lib/kebab-case';
+import { BannerInfo, ImageInfo, ProcessedProduct, ProductImageInfo } from './type';
 
-function writeFileToImgFolder(fileName, data) {
+function writeFileToImgFolder(fileName: string, data: Buffer) {
   const writeStream = fs.createWriteStream(path.resolve(imageOutputFolder, fileName));
   writeStream.write(data);
   writeStream.end();
 }
 
-function mapImagePath(imageName) {
+function mapImagePath(imageName: string) {
   return `${imagePublicPath}${imageName}`;
 }
 
-export function writeImageFiles(products, bannerImages) {
-  const productImages = [];
+export function writeImageFiles(products: ProcessedProduct[], bannerImages: ImageInfo[]) {
+  const productImages: (ProductImageInfo | null)[] = [];
   products.forEach(product => {
-    const images = {};
+    const images: ProductImageInfo = {};
     product.imgs.forEach(function createImg(imgData) {
       const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.height}x${
         imgData.img.info.width
@@ -35,10 +35,10 @@ export function writeImageFiles(products, bannerImages) {
     return Object.assign({}, productData, { images: productImages[index] });
   });
 
-  const bannerImageNames = [];
+  const bannerInfos: BannerInfo[] = [];
 
   bannerImages.forEach((bannerImage, bannerImgIndex) => {
-    const imageMap = {};
+    const imageMap: BannerInfo = {};
     bannerImage.images.forEach(image => {
       const imgName = `banner-${bannerImgIndex}.${image.info.height}x${image.info.width}.${
         image.info.format
@@ -48,8 +48,8 @@ export function writeImageFiles(products, bannerImages) {
 
       imageMap[image.info.width] = mapImagePath(imgName);
     });
-    bannerImageNames.push(imageMap);
+    bannerInfos.push(imageMap);
   });
 
-  return { bannerImages: bannerImageNames, productsWithImages };
+  return { bannerInfos, productsWithImages };
 }
