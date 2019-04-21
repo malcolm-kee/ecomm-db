@@ -4,6 +4,7 @@ const path = require('path');
 
 const getId = require('./lib/get-id');
 const isUrl = require('./lib/is-url');
+const { numOfProducts } = require('./constants');
 const products = require('./products');
 const processImage = require('./process-image');
 
@@ -179,7 +180,9 @@ function processImages(product) {
 }
 
 module.exports = function createProductDb() {
-  const allProducts = products.concat(createFakeProducts(100)).map(associateRelatedProducts);
+  const allProducts = products
+    .concat(createFakeProducts(numOfProducts))
+    .map(associateRelatedProducts);
   console.info('Created all products.');
   console.info('Processing product images...');
   return Promise.all(allProducts.map(processImages)).then(images =>

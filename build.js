@@ -9,6 +9,7 @@ const createProductDb = require('./src/create-product-db');
 const processBannerImages = require('./src/process-banner-images');
 const createUserDb = require('./src/create-user-db');
 const createCommentDb = require('./src/create-comment-db');
+const { imagePublicPath, numOfUsers } = require('./src/constants');
 
 function clean() {
   return new Promise(function(fulfill, reject) {
@@ -40,8 +41,6 @@ function copyPublicFolder() {
   });
 }
 
-const IMAGE_PUBLIC_PATH = 'https://ecomm-db.herokuapp.com/images/';
-
 function createFilesAndData(products) {
   function writeFileToImgFolder(fileName, data) {
     const writeStream = fs.createWriteStream(
@@ -52,7 +51,7 @@ function createFilesAndData(products) {
   }
 
   function mapImagePath(imageName) {
-    return `${IMAGE_PUBLIC_PATH}${imageName}`;
+    return `${imagePublicPath}${imageName}`;
   }
 
   return new Promise(function(fulfill, reject) {
@@ -99,16 +98,14 @@ function createFilesAndData(products) {
           return bannerImageNames;
         })
         .then(bannerImages => {
-          fulfill({ banners: bannerImages, products: productsWithImages });
+          fulfill({ bannerImages, productsWithImages });
         })
         .catch(reject);
     });
   });
 }
 
-function buildDb({ products, banners }) {
-  const users = createUserDb(100);
-  const comments = createCommentDb(products, users);
+function buildDb({ products, banners, users, comments }) {
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
       path.resolve(__dirname, 'build', 'db.json'),
@@ -133,14 +130,17 @@ function buildDb({ products, banners }) {
   });
 }
 
-clean()
-  .then(copyPublicFolder)
-  .then(createProductDb)
-  .then(createFilesAndData)
-  .then(buildDb)
-  .catch(function finalCatch(err) {
-    console.error('Error in finalCatch');
-    console.error('===================');
+async function build() {
+  try {
+    await clean();
+    await copyPublicFolder();
+    const [products, users] = await Promise.all([createProductDb(), createUserDb(numOfUsers)]);
+    const comments = createCommentDb(products, users);
+    const { bannerImages, productsWithImages } = await createFilesAndData(products);
+    await buildDb({ banners: bannerImages, products: productsWithImages, users, comments });
+  } catch (err) {
     console.error(err);
-    console.error('===================');
-  });
+  }
+}
+
+build();
