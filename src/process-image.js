@@ -19,7 +19,10 @@ function getSharp(imagePath) {
   return new Promise((fulfill, reject) => {
     if (isUrl(imagePath)) {
       request({ url: imagePath, encoding: null }, function afterRequest(err, res, bodyBuffer) {
-        if (err) return reject(err);
+        if (err) {
+          console.error(`Error downloading image: ${imagePath}`);
+          return reject(err);
+        }
 
         return fulfill(sharp(bodyBuffer));
       });

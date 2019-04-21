@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "node build.js",
-    "build:local": "cross-env NODE_ENV=development node build.js",
+    "build": "node src/build.js",
+    "build:local": "cross-env NODE_ENV=development node src/build.js",
     "heroku-postbuild": "npm run build"
   },
   "repository": {
