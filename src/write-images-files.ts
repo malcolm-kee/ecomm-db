@@ -3,53 +3,75 @@ import path from 'path';
 import { imageOutputFolder, imagePublicPath } from './constants';
 import { kebabCase } from './lib/kebab-case';
 import { BannerInfo, ImageInfo, ProcessedProduct, ProductImageInfo } from './type';
+import { Sharp } from 'sharp';
 
-function writeFileToImgFolder(fileName: string, data: Buffer) {
-  const writeStream = fs.createWriteStream(path.resolve(imageOutputFolder, fileName));
-  writeStream.write(data);
-  writeStream.end();
+function writeFileToImgFolder(fileName: string, sharp: Sharp) {
+  return new Promise((fulfill, reject) => {
+    const writeStream = fs.createWriteStream(path.resolve(imageOutputFolder, fileName));
+    sharp.pipe(writeStream);
+    writeStream.once('error', reject);
+    writeStream.once('finish', fulfill);
+  });
 }
 
 function mapImagePath(imageName: string) {
   return `${imagePublicPath}${imageName}`;
 }
 
-export function writeImageFiles(products: ProcessedProduct[], bannerImages: ImageInfo[]) {
-  const productImages: (ProductImageInfo | null)[] = [];
-  products.forEach(product => {
-    const images: ProductImageInfo = {};
-    product.imgs.forEach(function createImg(imgData) {
-      const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.info.height}x${
-        imgData.img.info.width
-      }.${imgData.img.info.format}`;
-      writeFileToImgFolder(imgName, imgData.img.data);
+async function writeImagesForProduct(product: ProcessedProduct) {
+  const images: ProductImageInfo = {};
+  const writeFilesPromises: Promise<{}>[] = [];
 
-      images[imgData.size] = imgName;
-    });
+  product.imgs.forEach(function createImg(imgData) {
+    const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.height}x${
+      imgData.img.width
+    }.${imgData.img.format}`;
+    images[imgData.size] = imgName;
 
-    productImages.push(product.imgs.length > 0 ? images : null);
+    writeFilesPromises.push(writeFileToImgFolder(imgName, imgData.img.sharp));
   });
 
-  const productsWithImages = products.map((product, index) => {
-    const { imgs: _, ...productData } = product;
-    return Object.assign({}, productData, { images: productImages[index] });
+  await Promise.all(writeFilesPromises);
+
+  return product.imgs.length > 0 ? images : null;
+}
+
+async function writeAllProductImages(products: ProcessedProduct[]) {
+  const allImages = await Promise.all(products.map(writeImagesForProduct));
+  return allImages.map((images, index) => {
+    const { imgs: _, ...productData } = products[index];
+    return {
+      ...productData,
+      images
+    };
+  });
+}
+
+async function writeImagesForBanner(banner: ImageInfo, index: number) {
+  const imageMap: BannerInfo = {};
+  const writeFilesPromises: Promise<{}>[] = [];
+
+  banner.images.forEach(image => {
+    const imgName = `banner-${index}.${image.height}x${image.width}.${image.format}`;
+
+    writeFilesPromises.push(writeFileToImgFolder(imgName, image.sharp));
+
+    imageMap[image.width] = mapImagePath(imgName);
   });
 
-  const bannerInfos: BannerInfo[] = [];
+  await Promise.all(writeFilesPromises);
 
-  bannerImages.forEach((bannerImage, bannerImgIndex) => {
-    const imageMap: BannerInfo = {};
-    bannerImage.images.forEach(image => {
-      const imgName = `banner-${bannerImgIndex}.${image.info.height}x${image.info.width}.${
-        image.info.format
-      }`;
+  return imageMap;
+}
 
-      writeFileToImgFolder(imgName, image.data);
+const writeAllBannerImages = (banners: ImageInfo[]) =>
+  Promise.all(banners.map(writeImagesForBanner));
 
-      imageMap[image.info.width] = mapImagePath(imgName);
-    });
-    bannerInfos.push(imageMap);
-  });
+export async function writeImageFiles(products: ProcessedProduct[], bannerImages: ImageInfo[]) {
+  const [productsWithImages, bannerInfos] = await Promise.all([
+    writeAllProductImages(products),
+    writeAllBannerImages(bannerImages)
+  ]);
 
   return { bannerInfos, productsWithImages };
 }

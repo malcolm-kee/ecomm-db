@@ -1,6 +1,5 @@
 import request from 'request';
 import sharp, { Sharp } from 'sharp';
-
 import { isUrl } from './lib/is-url';
 import { GenerateImageOption } from './type';
 
@@ -45,14 +44,18 @@ function generateImage(
   if (!blur) {
     const imgClone = img.clone().resize(width, height, {
       fit,
+      position: 'top',
       background: 'rgb(255,255,255)'
     });
 
-    return Promise.resolve(format === 'jpg' ? imgClone.jpeg() : imgClone.webp()).then(sharp =>
-      sharp.toBuffer({
-        resolveWithObject: true
-      })
-    );
+    const sharp = format === 'jpg' ? imgClone.jpeg() : imgClone.webp();
+
+    return {
+      sharp,
+      width,
+      height,
+      format
+    };
   }
 
   const imgClone = img.clone().resize(Image_Size.blur.w, Image_Size.blur.h, {
@@ -61,18 +64,23 @@ function generateImage(
     kernel: 'cubic'
   });
 
-  return Promise.resolve(
-    format === 'jpg' ? imgClone.jpeg({ quality: 1 }) : imgClone.webp({ quality: 1 })
-  ).then(sharp =>
-    sharp
-      .blur()
-      .resize(width, height, { kernel: 'cubic' })
-      .toBuffer({ resolveWithObject: true })
-  );
+  const sharp = (format === 'jpg' ? imgClone.jpeg({ quality: 1 }) : imgClone.webp({ quality: 1 }))
+    .blur()
+    .resize(width, height, { kernel: 'cubic' });
+
+  return {
+    sharp,
+    width,
+    height,
+    format
+  };
 }
 
-export function processImage(imagePath: string, imageGenerationOptions: GenerateImageOption[]) {
-  return getSharp(imagePath).then(img =>
-    Promise.all(imageGenerationOptions.map(option => generateImage(img, option)))
-  );
+export async function processImage(
+  imagePath: string,
+  imageGenerationOptions: GenerateImageOption[]
+) {
+  const sharp = await getSharp(imagePath);
+
+  return imageGenerationOptions.map(option => generateImage(sharp, option));
 }

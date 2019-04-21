@@ -107,7 +107,7 @@ async function build() {
     ]);
     const comments = createCommentDb(products, users);
 
-    const { bannerInfos, productsWithImages } = writeImageFiles(products, bannerImageData);
+    const { bannerInfos, productsWithImages } = await writeImageFiles(products, bannerImageData);
 
     await buildDb({ banners: bannerInfos, products: productsWithImages, users, comments });
   } catch (err) {

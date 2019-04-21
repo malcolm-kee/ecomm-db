@@ -1,8 +1,10 @@
-import { OutputInfo } from 'sharp';
+import { Sharp } from 'sharp';
 
 export interface ImageData {
-  data: Buffer;
-  info: OutputInfo;
+  sharp: Sharp;
+  width: number;
+  height: number;
+  format: string;
 }
 
 export interface Product {

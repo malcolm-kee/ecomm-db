@@ -11,8 +11,14 @@ export function processBannerImages(): Promise<ImageInfo[]> {
         files.map(bannerImgPath =>
           processImage(bannerImgPath, [
             {
+              width: 2500,
+              height: 1000,
+              fit: 'cover',
+              format: 'jpg'
+            },
+            {
               width: 1242,
-              height: 373,
+              height: 400,
               fit: 'cover',
               format: 'jpg'
             },
