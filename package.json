@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "generate-build": "webpack",
+    "pack": "webpack",
+    "pack:watch": "webpack --watch",
     "build": "node dist/build.js",
     "build:local": "cross-env IS_DEV=true node dist/build.js",
-    "heroku-postbuild": "npm run generate-build && npm run build"
+    "heroku-postbuild": "npm run pack && npm run build"
   },
   "engines": {
     "node": "8.12.0"

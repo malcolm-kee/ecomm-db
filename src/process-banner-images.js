@@ -1,7 +1,7 @@
-const glob = require('glob');
-const processImage = require('./process-image');
+import glob from 'glob';
+import { processImage } from './process-image';
 
-function processBannerImages() {
+export function processBannerImages() {
   return new Promise((fulfill, reject) => {
     glob(__dirname + '/../images/banner**.jpg', function afterGlob(error, files) {
       if (error) return reject(error);
@@ -40,5 +40,3 @@ function processBannerImages() {
     });
   });
 }
-
-module.exports = processBannerImages;

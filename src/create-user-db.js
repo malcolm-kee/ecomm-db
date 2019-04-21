@@ -1,5 +1,5 @@
-const faker = require('faker');
-const { getId } = require('./lib/get-id');
+import faker from 'faker';
+import { getId } from './lib/get-id';
 
 function createUserProfile() {
   const firstName = faker.name.firstName();
@@ -16,10 +16,10 @@ function createUserProfile() {
 /**
  * @param {number} userCount
  */
-module.exports = function createUserDb(userCount) {
+export function createUserDb(userCount) {
   const users = [];
   for (let index = 0; index < userCount; index++) {
     users.push(createUserProfile());
   }
   return users;
-};
+}

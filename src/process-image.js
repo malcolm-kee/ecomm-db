@@ -1,7 +1,7 @@
-const request = require('request');
-const sharp = require('sharp');
+import request from 'request';
+import sharp from 'sharp';
 
-const { isUrl } = require('./lib/is-url');
+import { isUrl } from './lib/is-url';
 
 const Image_Size = {
   blur: {
@@ -82,10 +82,8 @@ function generateImage(img, { width, height, format, blur = false, fit = 'contai
  * @param {string} imagePath
  * @param {GenerateImageOption[]} imageGenerationOptions
  */
-function procesImage(imagePath, imageGenerationOptions) {
+export function processImage(imagePath, imageGenerationOptions) {
   return getSharp(imagePath).then(img =>
     Promise.all(imageGenerationOptions.map(option => generateImage(img, option)))
   );
 }
-
-module.exports = procesImage;

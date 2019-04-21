@@ -3,10 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { getId } from './lib/get-id';
 import { isUrl } from './lib/is-url';
-import products from './products';
+import { products } from './products';
 
-const { numOfProducts } = require('./constants');
-const processImage = require('./process-image');
+import { numOfProducts } from './constants';
+import { processImage } from './process-image';
 
 /**
  *

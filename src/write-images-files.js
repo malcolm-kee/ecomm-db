@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const { imageOutputFolder, imagePublicPath } = require('./constants');
-const { kebabCase } = require('./lib/kebab-case');
+import { imageOutputFolder, imagePublicPath } from './constants';
+import { kebabCase } from './lib/kebab-case';
 
 function writeFileToImgFolder(fileName, data) {
   const writeStream = fs.createWriteStream(path.resolve(imageOutputFolder, fileName));
@@ -14,7 +14,7 @@ function mapImagePath(imageName) {
   return `${imagePublicPath}${imageName}`;
 }
 
-function writeImageFiles(products, bannerImages) {
+export function writeImageFiles(products, bannerImages) {
   const productImages = [];
   products.forEach(product => {
     const images = {};
@@ -53,5 +53,3 @@ function writeImageFiles(products, bannerImages) {
 
   return { bannerImages: bannerImageNames, productsWithImages };
 }
-
-module.exports = writeImageFiles;

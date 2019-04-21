@@ -1,21 +1,21 @@
-const fs = require('fs');
-const mkdirp = require('mkdirp');
-const { ncp } = require('ncp');
-const path = require('path');
-const rimraf = require('rimraf');
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import { ncp } from 'ncp';
+import path from 'path';
+import rimraf from 'rimraf';
 
-const { createProductDb } = require('./create-product-db');
-const processBannerImages = require('./process-banner-images');
-const createUserDb = require('./create-user-db');
-const createCommentDb = require('./create-comment-db');
-const writeImageFiles = require('./write-images-files');
-const {
+import { createProductDb } from './create-product-db';
+import { processBannerImages } from './process-banner-images';
+import { createUserDb } from './create-user-db';
+import { createCommentDb } from './create-comment-db';
+import { writeImageFiles } from './write-images-files';
+import {
   numOfUsers,
   outputFolder,
   publicSrcPath,
   publicPath,
   imageOutputFolder
-} = require('./constants');
+} from './constants';
 
 function clean() {
   return new Promise(function(fulfill, reject) {

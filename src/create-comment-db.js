@@ -1,5 +1,5 @@
-const faker = require('faker');
-const { getId } = require('./lib/get-id');
+import faker from 'faker';
+import { getId } from './lib/get-id';
 
 function getCommentCount() {
   return faker.random.number({ min: 0, max: 10 });
@@ -13,7 +13,7 @@ function pickUser(users) {
   return users[userIndex];
 }
 
-module.exports = function createCommentDb(products, users) {
+export function createCommentDb(products, users) {
   return products
     .map(product => {
       const comments = [];
@@ -33,4 +33,4 @@ module.exports = function createCommentDb(products, users) {
       return comments;
     })
     .reduce((result, comments) => result.concat(comments), []);
-};
+}
