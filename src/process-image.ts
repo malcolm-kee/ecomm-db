@@ -39,12 +39,12 @@ function getSharp(imagePath: string): Promise<Sharp> {
 
 function generateImage(
   img: Sharp,
-  { width, height, format, blur = false, fit = 'contain' }: GenerateImageOption
+  { width, height, format, blur = false, fit = 'contain', position }: GenerateImageOption
 ) {
   if (!blur) {
     const imgClone = img.clone().resize(width, height, {
       fit,
-      position: 'top',
+      position,
       background: 'rgb(255,255,255)'
     });
 

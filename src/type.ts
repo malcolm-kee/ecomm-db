@@ -47,6 +47,7 @@ export interface GenerateImageOption {
   format: 'jpg' | 'webp';
   blur?: boolean;
   fit?: 'contain' | 'cover';
+  position?: 'top' | 'center';
 }
 
 export interface ImageInfo {

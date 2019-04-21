@@ -14,25 +14,29 @@ export function processBannerImages(): Promise<ImageInfo[]> {
               width: 2500,
               height: 1000,
               fit: 'cover',
-              format: 'jpg'
+              format: 'jpg',
+              position: 'top'
             },
             {
               width: 1242,
               height: 400,
               fit: 'cover',
-              format: 'jpg'
+              format: 'jpg',
+              position: 'top'
             },
             {
               width: 700,
               height: 350,
               fit: 'cover',
-              format: 'jpg'
+              format: 'jpg',
+              position: 'top'
             },
             {
               width: 500,
               height: 200,
               fit: 'cover',
-              format: 'jpg'
+              format: 'jpg',
+              position: 'top'
             }
           ])
         )
