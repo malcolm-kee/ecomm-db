@@ -3,7 +3,7 @@ const processImage = require('./process-image');
 
 function processBannerImages() {
   return new Promise((fulfill, reject) => {
-    glob(__dirname + '/images/banner**.jpg', function afterGlob(error, files) {
+    glob(__dirname + '/../images/banner**.jpg', function afterGlob(error, files) {
       if (error) return reject(error);
 
       return Promise.all(

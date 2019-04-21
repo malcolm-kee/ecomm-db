@@ -1,6 +1,6 @@
 const path = require('path');
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.IS_DEV === 'true';
 
 const outputFolder = path.resolve(__dirname, '..', 'build');
 const publicPath = path.resolve(outputFolder, 'public');

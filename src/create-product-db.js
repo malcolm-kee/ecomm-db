@@ -168,7 +168,7 @@ function processProductImage(imagePath) {
 function processImages(product) {
   const imagePath =
     product.image &&
-    (isUrl(product.image) ? product.image : path.resolve(__dirname, 'images', product.image));
+    (isUrl(product.image) ? product.image : path.resolve(__dirname, '..', 'images', product.image));
 
   return isFileExist(imagePath).then(imageExist => {
     if (imageExist) {
