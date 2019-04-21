@@ -2,6 +2,6 @@
  * Check if the path starts with "http://" or "https://"
  * @param {string} path
  */
-module.exports = function isUrl(path) {
+export function isUrl(path: string) {
   return /^https?:\/\//.test(path);
-};
+}

@@ -1,7 +1,7 @@
 const request = require('request');
 const sharp = require('sharp');
 
-const isUrl = require('./lib/is-url');
+const { isUrl } = require('./lib/is-url');
 
 const Image_Size = {
   blur: {

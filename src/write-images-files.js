@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { imageOutputFolder, imagePublicPath } = require('./constants');
-const kebabCase = require('./lib/kebab-case');
+const { kebabCase } = require('./lib/kebab-case');
 
 function writeFileToImgFolder(fileName, data) {
   const writeStream = fs.createWriteStream(path.resolve(imageOutputFolder, fileName));

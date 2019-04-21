@@ -1,5 +1,5 @@
 const faker = require('faker');
-const getId = require('./lib/get-id');
+const { getId } = require('./lib/get-id');
 
 function getCommentCount() {
   return faker.random.number({ min: 0, max: 10 });

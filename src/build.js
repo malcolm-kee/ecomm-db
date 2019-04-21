@@ -4,7 +4,7 @@ const { ncp } = require('ncp');
 const path = require('path');
 const rimraf = require('rimraf');
 
-const createProductDb = require('./create-product-db');
+const { createProductDb } = require('./create-product-db');
 const processBannerImages = require('./process-banner-images');
 const createUserDb = require('./create-user-db');
 const createCommentDb = require('./create-comment-db');

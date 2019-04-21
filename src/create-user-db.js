@@ -1,5 +1,5 @@
 const faker = require('faker');
-const getId = require('./lib/get-id');
+const { getId } = require('./lib/get-id');
 
 function createUserProfile() {
   const firstName = faker.name.firstName();

@@ -1,11 +1,11 @@
-const faker = require('faker');
-const fs = require('fs');
-const path = require('path');
+import faker from 'faker';
+import fs from 'fs';
+import path from 'path';
+import { getId } from './lib/get-id';
+import { isUrl } from './lib/is-url';
+import products from './products';
 
-const getId = require('./lib/get-id');
-const isUrl = require('./lib/is-url');
 const { numOfProducts } = require('./constants');
-const products = require('./products');
 const processImage = require('./process-image');
 
 /**
@@ -19,7 +19,16 @@ const processImage = require('./process-image');
  * @property {string} price
  */
 
-function getRandomInteger(max) {
+interface Product {
+  id: number;
+  name: string;
+  descriptions: string[];
+  image: string;
+  department: string;
+  price: string;
+}
+
+function getRandomInteger(max: number) {
   return faker.random.number({
     max,
     min: 0,
@@ -28,7 +37,7 @@ function getRandomInteger(max) {
 }
 
 function getProductImage() {
-  function getImage(id) {
+  function getImage(id: number) {
     switch (id) {
       case 0:
         return faker.image.fashion(700, 700);
@@ -62,7 +71,7 @@ function createFakeProduct() {
  *
  * @param {number} count
  */
-function createFakeProducts(count) {
+function createFakeProducts(count: number) {
   const products = [];
 
   for (let index = 0; index < count; index++) {
@@ -72,13 +81,7 @@ function createFakeProducts(count) {
   return products;
 }
 
-/**
- *
- * @param {Product} product
- * @param {*} _
- * @param {Product[]} products
- */
-function associateRelatedProducts(product, _, products) {
+function associateRelatedProducts(product: Product, _: any, products: Product[]) {
   const productsInSameDepartment = products.filter(
     p => p.department === product.department && p !== product
   );
@@ -91,7 +94,7 @@ function associateRelatedProducts(product, _, products) {
   });
 }
 
-function isFileExist(filePath) {
+function isFileExist(filePath: string) {
   return new Promise(fulfill => {
     if (!filePath) return fulfill(false);
     if (isUrl(filePath)) return fulfill(true);
@@ -114,11 +117,7 @@ const Image_Size = {
   }
 };
 
-/**
- *
- * @param {string} imagePath
- */
-function processProductImage(imagePath) {
+function processProductImage(imagePath: string) {
   return processImage(imagePath, [
     {
       width: Image_Size.standard.w,
@@ -152,7 +151,7 @@ function processProductImage(imagePath) {
       format: 'jpg',
       blur: true
     }
-  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
+  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]: string[]) => [
     { size: 'standard', img: stdImg },
     { size: 'webp', img: webpImg },
     {
@@ -165,7 +164,7 @@ function processProductImage(imagePath) {
   ]);
 }
 
-function processImages(product) {
+function processImages(product: Product) {
   const imagePath =
     product.image &&
     (isUrl(product.image) ? product.image : path.resolve(__dirname, '..', 'images', product.image));
@@ -179,7 +178,7 @@ function processImages(product) {
   });
 }
 
-module.exports = function createProductDb() {
+export function createProductDb() {
   const allProducts = products
     .concat(createFakeProducts(numOfProducts))
     .map(associateRelatedProducts);
@@ -190,4 +189,4 @@ module.exports = function createProductDb() {
       Object.assign({}, allProducts[index], { imgs: processedImgs })
     )
   );
-};
+}
