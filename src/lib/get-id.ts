@@ -1,5 +1,5 @@
 export const getId = (function() {
-  let id = 0;
+  let id = 20000;
 
   return function generateId() {
     return id++;
