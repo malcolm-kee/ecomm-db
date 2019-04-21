@@ -27,16 +27,6 @@ function getSharp(imagePath: string): Promise<Sharp> {
   });
 }
 
-/**
- *
- * @typedef {Object} GenerateImageOption
- * @property {number} width
- * @property {number} height
- * @property {'jpg' | 'webp'} format
- * @property {boolean} [blur]
- * @property {'contain' | 'cover'} [fit]
- */
-
 function generateImage(
   img: Sharp,
   { width, height, format, blur = false, fit = 'contain', position }: GenerateImageOption
