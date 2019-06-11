@@ -1,5 +1,4 @@
 import imagemin from 'imagemin';
-import imageminPngquant from 'imagemin-pngquant';
 import request from 'request';
 import sharp, { Sharp } from 'sharp';
 import { isUrl } from './lib/is-url';
@@ -7,17 +6,6 @@ import { GenerateImageOption } from './type';
 
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
-
-const Image_Size = {
-  blur: {
-    w: 5,
-    h: 5
-  },
-  largeBlur: {
-    w: 25,
-    h: 25
-  }
-};
 
 function getSharp(imagePath: string): Promise<Sharp> {
   return new Promise((fulfill, reject) => {
@@ -49,7 +37,7 @@ function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
   );
 }
 
-function compressWebp(pipeline: Sharp, { quality = 30 } = {}) {
+function compressWebp(pipeline: Sharp, { quality = 5 } = {}) {
   return pipeline.toBuffer().then(sharpBuffer =>
     imagemin.buffer(sharpBuffer, {
       plugins: [imageminWebp({ quality })]
