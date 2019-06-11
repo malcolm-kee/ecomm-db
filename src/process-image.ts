@@ -1,7 +1,12 @@
+import imagemin from 'imagemin';
+import imageminPngquant from 'imagemin-pngquant';
 import request from 'request';
 import sharp, { Sharp } from 'sharp';
 import { isUrl } from './lib/is-url';
 import { GenerateImageOption } from './type';
+
+const imageminMozjpeg = require(`imagemin-mozjpeg`);
+const imageminWebp = require(`imagemin-webp`);
 
 const Image_Size = {
   blur: {
@@ -31,51 +36,67 @@ function getSharp(imagePath: string): Promise<Sharp> {
   });
 }
 
-function generateImage(
+function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
+  return pipeline.toBuffer().then(sharpBuffer =>
+    imagemin.buffer(sharpBuffer, {
+      plugins: [
+        imageminMozjpeg({
+          quality,
+          progressive: true
+        })
+      ]
+    })
+  );
+}
+
+function compressWebp(pipeline: Sharp, { quality = 30 } = {}) {
+  return pipeline.toBuffer().then(sharpBuffer =>
+    imagemin.buffer(sharpBuffer, {
+      plugins: [imageminWebp({ quality })]
+    })
+  );
+}
+
+async function generateImage(
   img: Sharp,
   { width, height, format, blur = false, fit = 'contain', position }: GenerateImageOption
 ) {
   if (!blur) {
-    const imgClone = img.clone().resize(width, height, {
+    const sharp = img.clone().resize(width, height, {
       fit,
       position,
       background: 'rgb(255,255,255)'
     });
-
-    const sharp = format === 'jpg' ? imgClone.jpeg() : imgClone.webp();
 
     return {
       sharp,
       width,
       height,
       format,
-      blur
+      blur,
+      buffer:
+        format === 'jpg'
+          ? await compressJpg(sharp, { quality: 100 })
+          : await compressWebp(sharp, { quality: 100 })
     };
   }
 
-  const imgClone = img
-    .clone()
-    .resize(
-      width > 2000 ? Image_Size.largeBlur.w : Image_Size.blur.w,
-      width > 2000 ? Image_Size.largeBlur.h : Image_Size.blur.h,
-      {
-        fit,
-        position,
-        background: 'rgb(255,255,255)',
-        kernel: 'cubic'
-      }
-    );
+  const sharp = img.clone().resize(width, height, {
+    fit,
+    position,
+    background: 'rgb(255,255,255)',
+    kernel: 'cubic'
+  });
 
-  const sharp = (format === 'jpg' ? imgClone.jpeg({ quality: 1 }) : imgClone.webp({ quality: 1 }))
-    .blur()
-    .resize(width, height, { kernel: 'cubic', position });
+  const compressedBuffer = format === 'jpg' ? await compressJpg(sharp) : await compressWebp(sharp);
 
   return {
     sharp,
     width,
     height,
     format,
-    blur
+    blur,
+    buffer: compressedBuffer
   };
 }
 
@@ -85,5 +106,5 @@ export async function processImage(
 ) {
   const sharp = await getSharp(imagePath);
 
-  return imageGenerationOptions.map(option => generateImage(sharp, option));
+  return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
 }

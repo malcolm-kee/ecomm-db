@@ -6,6 +6,7 @@ export interface ImageData {
   height: number;
   format: string;
   blur: boolean;
+  buffer: Buffer | null;
 }
 
 export interface Product {
