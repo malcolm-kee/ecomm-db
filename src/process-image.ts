@@ -1,5 +1,6 @@
 import imagemin from 'imagemin';
 import request from 'request';
+import fileType from 'file-type';
 import sharp, { Sharp } from 'sharp';
 import { isUrl } from './lib/is-url';
 import { GenerateImageOption } from './type';
@@ -7,14 +8,32 @@ import { GenerateImageOption } from './type';
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
 
+function checkFileType(buffer: Buffer) {
+  try {
+    const result = fileType(buffer);
+    if (result) {
+      console.info(result);
+    }
+  } catch (e) {
+    console.error(`Error parsing filetype ${e}`);
+  }
+}
+
 function getSharp(imagePath: string): Promise<Sharp> {
   return new Promise((fulfill, reject) => {
     if (isUrl(imagePath)) {
-      request({ url: imagePath, encoding: null }, function afterRequest(err, res, bodyBuffer) {
+      request({ url: imagePath, encoding: null }, function afterRequest(
+        err,
+        res,
+        bodyBuffer: Buffer
+      ) {
+        console.group(`Done downloading image: ${imagePath}`);
         if (err) {
           console.error(`Error downloading image: ${imagePath}`);
           return reject(err);
         }
+        checkFileType(bodyBuffer);
+        console.groupEnd();
 
         return fulfill(sharp(bodyBuffer));
       });
