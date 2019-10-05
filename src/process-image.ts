@@ -1,6 +1,6 @@
+import fileType from 'file-type';
 import imagemin from 'imagemin';
 import request from 'request';
-import fileType from 'file-type';
 import sharp, { Sharp } from 'sharp';
 import { isUrl } from './lib/is-url';
 import { GenerateImageOption } from './type';
@@ -27,13 +27,11 @@ function getSharp(imagePath: string): Promise<Sharp> {
         res,
         bodyBuffer: Buffer
       ) {
-        console.group(`Done downloading image: ${imagePath}`);
         if (err) {
           console.error(`Error downloading image: ${imagePath}`);
           return reject(err);
         }
         checkFileType(bodyBuffer);
-        console.groupEnd();
 
         return fulfill(sharp(bodyBuffer));
       });
@@ -111,7 +109,13 @@ export async function processImage(
   imagePath: string,
   imageGenerationOptions: GenerateImageOption[]
 ) {
-  const sharp = await getSharp(imagePath);
+  console.group(`Processing image for ${imagePath}`);
 
-  return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
+  try {
+    const sharp = await getSharp(imagePath);
+
+    return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
+  } finally {
+    console.groupEnd();
+  }
 }
