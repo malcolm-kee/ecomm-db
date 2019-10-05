@@ -20,13 +20,13 @@ function getProductImage() {
   function getImage(id: number) {
     switch (id) {
       case 0:
-        return faker.image.fashion(700, 700);
+        return `https://placeimg.com/700/700/people`;
 
       case 1:
-        return faker.image.technics(700, 700);
+        return `https://placeimg.com/700/700/tech`;
 
       default:
-        return faker.image.abstract(700, 700);
+        return `https://placeimg.com/700/700/nature`;
     }
   }
 
