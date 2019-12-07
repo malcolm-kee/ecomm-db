@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/malcolm-kee/ecomm-db#readme",
   "dependencies": {
+    "express-formidable": "^1.2.0",
     "imagemin": "^7.0.1",
     "imagemin-mozjpeg": "^8.0.0",
     "imagemin-pngquant": "^8.0.0",

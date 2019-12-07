@@ -7,7 +7,7 @@ export const products: Product[] = [
     descriptions: ['user-friendly', 'change the world', 'cool', 'expensive'],
     image: 'iphone-x.jpg',
     department: 'Electronics',
-    price: '3499.00'
+    price: '3499.00',
   },
   {
     id: 2,
@@ -15,7 +15,7 @@ export const products: Product[] = [
     descriptions: ['big', 'heavy', 'expensive'],
     image: 'samsung-galaxy-s10.jpg',
     department: 'Electronics',
-    price: '3299.00'
+    price: '3299.00',
   },
   {
     id: 3,
@@ -23,7 +23,7 @@ export const products: Product[] = [
     descriptions: ['pretty', 'elegent', 'expensive'],
     image: 'dw-watch.png',
     department: 'Clothing',
-    price: '1999.00'
+    price: '1999.00',
   },
   {
     id: 4,
@@ -31,6 +31,6 @@ export const products: Product[] = [
     descriptions: [],
     image: 'dono.png',
     department: 'Food',
-    price: '2.50'
-  }
+    price: '2.50',
+  },
 ];

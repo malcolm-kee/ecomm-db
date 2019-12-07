@@ -10,7 +10,7 @@ function createUserProfile(): User {
     name: `${firstName} ${lastName}`,
     email: faker.internet.email(firstName, lastName),
     joinedDate: faker.date.past().getTime(),
-    avatar: faker.image.avatar()
+    avatar: faker.image.avatar(),
   };
 }
 

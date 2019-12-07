@@ -48,7 +48,7 @@ async function writeAllProductImages(products: ProcessedProduct[]) {
     const { imgs: _, ...productData } = products[index];
     return {
       ...productData,
-      images
+      images,
     };
   });
 }
@@ -80,7 +80,7 @@ const writeAllBannerImages = (banners: ImageInfo[]) =>
 export async function writeImageFiles(products: ProcessedProduct[], bannerImages: ImageInfo[]) {
   const [productsWithImages, bannerInfos] = await Promise.all([
     writeAllProductImages(products),
-    writeAllBannerImages(bannerImages)
+    writeAllBannerImages(bannerImages),
   ]);
 
   return { bannerInfos, productsWithImages };

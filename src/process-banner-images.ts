@@ -8,29 +8,29 @@ const bannerImageOptions: GenerateImageOption[] = [
     height: 1000,
     fit: 'cover',
     format: 'jpg',
-    position: 'top'
+    position: 'top',
   },
   {
     width: 1242,
     height: 400,
     fit: 'cover',
     format: 'jpg',
-    position: 'top'
+    position: 'top',
   },
   {
     width: 700,
     height: 350,
     fit: 'cover',
     format: 'jpg',
-    position: 'top'
+    position: 'top',
   },
   {
     width: 500,
     height: 200,
     fit: 'cover',
     format: 'jpg',
-    position: 'top'
-  }
+    position: 'top',
+  },
 ];
 
 export function processBannerImages(): Promise<ImageInfo[]> {
@@ -48,8 +48,8 @@ export function processBannerImages(): Promise<ImageInfo[]> {
                   option,
                   {
                     ...option,
-                    blur: true
-                  }
+                    blur: true,
+                  },
                 ]),
               []
             )
@@ -58,7 +58,7 @@ export function processBannerImages(): Promise<ImageInfo[]> {
       )
         .then(data =>
           data.map(images => ({
-            images
+            images,
           }))
         )
         .then(fulfill)

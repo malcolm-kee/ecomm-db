@@ -8,7 +8,7 @@ import {
   numOfUsers,
   outputFolder,
   publicPath,
-  publicSrcPath
+  publicSrcPath,
 } from './constants';
 import { createCommentDb } from './create-comment-db';
 import { createProductDb } from './create-product-db';
@@ -65,7 +65,7 @@ function buildDb({
   products,
   banners,
   users,
-  comments
+  comments,
 }: {
   products: DbProduct[];
   banners: DbBanner[];
@@ -79,7 +79,7 @@ function buildDb({
         banners,
         comments,
         users,
-        products
+        products,
       }),
       'utf8',
       function afterBuildDb(err) {
@@ -103,7 +103,7 @@ async function build() {
     const [products, users, bannerImageData] = await Promise.all([
       createProductDb(),
       createUserDb(numOfUsers),
-      processBannerImages()
+      processBannerImages(),
     ]);
     const comments = createCommentDb(products, users);
 

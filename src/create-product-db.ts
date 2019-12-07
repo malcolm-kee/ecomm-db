@@ -12,7 +12,7 @@ function getRandomInteger(max: number) {
   return faker.random.number({
     max,
     min: 0,
-    precision: 1
+    precision: 1,
   });
 }
 
@@ -40,7 +40,7 @@ function createFakeProduct(): Product {
     descriptions: [faker.commerce.productAdjective(), faker.commerce.productAdjective()],
     image: getProductImage(),
     department: faker.commerce.department(),
-    price: faker.commerce.price()
+    price: faker.commerce.price(),
   };
 }
 
@@ -63,7 +63,7 @@ function associateRelatedProducts(product: Product, _: any, products: Product[])
     () => productsInSameDepartment[getRandomInteger(productsInSameDepartment.length - 1)].id
   );
   return Object.assign({}, product, {
-    related: relatedProducts.filter((p, index, array) => array.indexOf(p) === index)
+    related: relatedProducts.filter((p, index, array) => array.indexOf(p) === index),
   });
 }
 
@@ -82,12 +82,12 @@ function isFileExist(filePath: string) {
 const Image_Size = {
   standard: {
     w: 600,
-    h: 600
+    h: 600,
   },
   thumb: {
     w: 188,
-    h: 188
-  }
+    h: 188,
+  },
 };
 
 function processProductImage(imagePath: string) {
@@ -95,45 +95,45 @@ function processProductImage(imagePath: string) {
     {
       width: Image_Size.standard.w,
       height: Image_Size.standard.h,
-      format: 'jpg'
-    },
-    {
-      width: Image_Size.standard.w,
-      height: Image_Size.standard.h,
-      format: 'webp'
-    },
-    {
-      width: Image_Size.thumb.w,
-      height: Image_Size.thumb.h,
-      format: 'jpg'
-    },
-    {
-      width: Image_Size.thumb.w,
-      height: Image_Size.thumb.h,
-      format: 'webp'
-    },
-    {
-      width: Image_Size.standard.w,
-      height: Image_Size.standard.h,
       format: 'jpg',
-      blur: true
+    },
+    {
+      width: Image_Size.standard.w,
+      height: Image_Size.standard.h,
+      format: 'webp',
     },
     {
       width: Image_Size.thumb.w,
       height: Image_Size.thumb.h,
       format: 'jpg',
-      blur: true
-    }
+    },
+    {
+      width: Image_Size.thumb.w,
+      height: Image_Size.thumb.h,
+      format: 'webp',
+    },
+    {
+      width: Image_Size.standard.w,
+      height: Image_Size.standard.h,
+      format: 'jpg',
+      blur: true,
+    },
+    {
+      width: Image_Size.thumb.w,
+      height: Image_Size.thumb.h,
+      format: 'jpg',
+      blur: true,
+    },
   ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
     { size: 'standard', img: stdImg },
     { size: 'webp', img: webpImg },
     {
       size: 'thumbStandard',
-      img: stdImgSmall
+      img: stdImgSmall,
     },
     { size: 'thumbWebp', img: webpImgSmall },
     { size: 'blur', img: imgBlur },
-    { size: 'thumbBlur', img: imgBlurSm }
+    { size: 'thumbBlur', img: imgBlurSm },
   ]);
 }
 

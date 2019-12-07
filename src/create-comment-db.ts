@@ -24,7 +24,7 @@ export function createCommentDb(products: Product[], users: User[]): Comment[] {
           userId: user.id,
           userName: user.name,
           content: faker.lorem.sentence(),
-          createdOn: faker.date.past().getTime()
+          createdOn: faker.date.past().getTime(),
         });
       }
 

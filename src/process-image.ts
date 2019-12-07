@@ -47,9 +47,9 @@ function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
       plugins: [
         imageminMozjpeg({
           quality,
-          progressive: true
-        })
-      ]
+          progressive: true,
+        }),
+      ],
     })
   );
 }
@@ -57,7 +57,7 @@ function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
 function compressWebp(pipeline: Sharp, { quality = 5 } = {}) {
   return pipeline.toBuffer().then(sharpBuffer =>
     imagemin.buffer(sharpBuffer, {
-      plugins: [imageminWebp({ quality })]
+      plugins: [imageminWebp({ quality })],
     })
   );
 }
@@ -70,7 +70,7 @@ async function generateImage(
     const sharp = img.clone().resize(width, height, {
       fit,
       position,
-      background: 'rgb(255,255,255)'
+      background: 'rgb(255,255,255)',
     });
 
     return {
@@ -82,7 +82,7 @@ async function generateImage(
       buffer:
         format === 'jpg'
           ? await compressJpg(sharp, { quality: 100 })
-          : await compressWebp(sharp, { quality: 100 })
+          : await compressWebp(sharp, { quality: 100 }),
     };
   }
 
@@ -90,7 +90,7 @@ async function generateImage(
     fit,
     position,
     background: 'rgb(255,255,255)',
-    kernel: 'cubic'
+    kernel: 'cubic',
   });
 
   const compressedBuffer = format === 'jpg' ? await compressJpg(sharp) : await compressWebp(sharp);
@@ -101,7 +101,7 @@ async function generateImage(
     height,
     format,
     blur,
-    buffer: compressedBuffer
+    buffer: compressedBuffer,
   };
 }
 
