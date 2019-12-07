@@ -32,7 +32,7 @@ async function writeImagesForProduct(product: ProcessedProduct) {
     const imgName = `${kebabCase(product.name)}.${imgData.size}.${imgData.img.height}x${
       imgData.img.width
     }.${imgData.img.format}`;
-    images[imgData.size] = imgName;
+    images[imgData.size] = mapImagePath(imgName);
 
     writeFilesPromises.push(writeFileToImgFolder(imgName, imgData.img.sharp, imgData.img.buffer));
   });

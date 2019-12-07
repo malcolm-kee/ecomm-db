@@ -109,13 +109,9 @@ export async function processImage(
   imagePath: string,
   imageGenerationOptions: GenerateImageOption[]
 ) {
-  console.group(`Processing image for ${imagePath}`);
+  console.log(`Processing image for ${imagePath}`);
 
-  try {
-    const sharp = await getSharp(imagePath);
+  const sharp = await getSharp(imagePath);
 
-    return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
-  } finally {
-    console.groupEnd();
-  }
+  return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
 }
