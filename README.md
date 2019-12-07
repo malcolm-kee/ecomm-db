@@ -2,6 +2,18 @@
 
 Generates a mock db for ecomm sites and exposes the data via REST API endpoints
 
+## Upload File
+
+You can upload files to this server by sending `PUT` request to `/upload` path, and it will returns an JSON object with the paths of the files:
+
+```json
+{
+  "files": ["https://ecomm-db.herokuapp.com/uploads/some-checksum-filename.png"]
+}
+```
+
+Note that the files uploaded will [be blown away](https://help.heroku.com/K1PPS2WM/why-are-my-file-uploads-missing-deleted) everytime the server restarts. It is meant for you to have a place to upload file temporarily for demo project only.
+
 ## Setting Up
 
 1. Clone this repo
