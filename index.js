@@ -9,8 +9,8 @@ const middlewares = jsonServer.defaults({
 });
 
 const APP_NAME = process.env.HEROKU_APP_NAME;
-const PORT = process.env.PORT || 3000;
-const app_base = APP_NAME ? `https://${APP_NAME}.herokuapp.com` : `http://localhost:3000`;
+const PORT = process.env.PORT || 6366;
+const app_base = APP_NAME ? `https://${APP_NAME}.herokuapp.com` : `http://localhost:${PORT}`;
 
 const uploadFolder = path.resolve(__dirname, 'build', 'public', 'uploads');
 

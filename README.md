@@ -21,7 +21,7 @@ Note that the files uploaded will [be blown away](https://help.heroku.com/K1PPS2
 1. Generates the db build script with `npm run pack`
 1. Generates the db with `npm run build`. To make this step faster by generates less data, use `npm run build:local`.
 1. Start the server with `npm start`
-1. You can now access the endpoints at [http://localhost:3000](http://localhost:3000)
+1. You can now access the endpoints at [http://localhost:6366](http://localhost:6366)
 
 ## Adding new product
 
