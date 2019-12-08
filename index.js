@@ -19,14 +19,14 @@ if (!fs.existsSync(uploadFolder)) {
 }
 
 server.use(middlewares);
-server.use(
+// TODO: make this works so it will not breaks POST request
+/* server.use(
   formidableMiddleware({
     uploadDir: uploadFolder,
     keepExtensions: true,
     multiples: true,
   })
-);
-
+); */
 server.put('/upload', (req, res) => {
   return res.json({
     files: Object.values(req.files).map(file => {
