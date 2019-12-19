@@ -25,6 +25,22 @@
           <a href="/banners">/banners</a>
         </li>
       </ul>
+      <form id="chat-form"><input id="msg" /><button type="submit">Send</button></form>
+      <div id="date"></div>
+      <script>
+        var wsHost = location.origin.replace(/^http/, 'ws');
+        var ws = new WebSocket(wsHost);
+        ws.onmessage = function(event) {
+          document.getElementById('date').innerHTML = event.data;
+        };
+        document.getElementById('chat-form').addEventListener('submit', function(ev) {
+          ev.preventDefault();
+          var $input = document.getElementById('msg');
+          ws.send($input.value);
+          $input.value = '';
+          $input.focus();
+        });
+      </script>
     </main>
     <footer>
       <p>
