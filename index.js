@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const jsonServer = require('json-server');
+const express = require('express');
 const formidableMiddleware = require('express-formidable');
-const server = jsonServer.create();
-const router = jsonServer.router(path.join(__dirname, 'build', 'db.json'));
+const server = express();
+const expressWs = require('express-ws')(server);
 const middlewares = jsonServer.defaults({
   static: path.join(__dirname, 'build', 'public'),
 });
@@ -19,7 +20,6 @@ if (!fs.existsSync(uploadFolder)) {
 }
 
 server.use(middlewares);
-
 server.put(
   '/upload',
   formidableMiddleware({
@@ -37,7 +37,24 @@ server.put(
   }
 );
 
-server.use(router);
+server.use('/api', jsonServer.router(path.join(__dirname, 'build', 'db.json')));
+
+server.ws('/chat', ws => {
+  ws.on('message', msg => {
+    broadcast(msg);
+  });
+
+  ws.on('open', () => console.log(`New connection`));
+
+  ws.on('close', () => console.log(`Socket client disconnected`));
+});
+
+const broadcast = msg => {
+  expressWs.getWss().clients.forEach(client => {
+    client.send(msg);
+  });
+};
+
 server.listen(PORT, () => {
-  console.log(`JSON Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
