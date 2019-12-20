@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Ecomm DB</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+
+      div {
+        box-sizing: border-box;
+      }
+
+      main,
+      footer {
+        padding: 0 16px;
+        max-width: 1260px;
+        margin: 0 auto;
+      }
+    </style>
   </head>
   <body>
     <main>
@@ -13,34 +30,148 @@
       <p>Following are the routes to explore:</p>
       <ul>
         <li>
-          <a href="/products">/products</a>
+          <a href="/api/products">/api/products</a>
         </li>
         <li>
-          <a href="/comments">/comments</a>
+          <a href="/api/comments">/api/comments</a>
         </li>
         <li>
-          <a href="/users">/users</a>
+          <a href="/api/users">/api/users</a>
         </li>
         <li>
-          <a href="/banners">/banners</a>
+          <a href="/api/banners">/api/banners</a>
         </li>
+        <li><code>/upload</code>: only <code>PUT</code> supported. Can be used to upload file.</li>
+        <li><code>/chat</code>: Websocket endpoint to join the chat</li>
       </ul>
-      <form id="chat-form"><input id="msg" /><button type="submit">Send</button></form>
-      <div id="date"></div>
+      <section class="chat">
+        <form id="join-chat-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" required id="username" />
+          </div>
+          <button type="submit">Join Chat</button>
+        </form>
+        <div id="chat-body">
+          <ul id="history"></ul>
+          <form id="chat-form"><input id="msg" required /><button type="submit">Send</button></form>
+        </div>
+      </section>
       <script>
-        var wsHost = location.origin.replace(/^http/, 'ws');
-        var ws = new WebSocket(wsHost);
-        ws.onmessage = function(event) {
-          document.getElementById('date').innerHTML = event.data;
-        };
-        document.getElementById('chat-form').addEventListener('submit', function(ev) {
-          ev.preventDefault();
-          var $input = document.getElementById('msg');
-          ws.send($input.value);
-          $input.value = '';
-          $input.focus();
-        });
+        (function chat() {
+          function setupChat(userName) {
+            document.getElementById('chat-body').style.display = 'flex';
+            var wsHost = location.origin.replace(/^http/, 'ws') + '/chat';
+            var ws = new WebSocket(wsHost);
+            ws.onmessage = function(event) {
+              const $li = document.createElement('li');
+              $li.innerHTML = event.data;
+              document.getElementById('history').prepend($li);
+            };
+            document.getElementById('chat-form').addEventListener('submit', function(ev) {
+              ev.preventDefault();
+              var $input = document.getElementById('msg');
+              ws.send(JSON.stringify({ userName: userName, msg: $input.value }));
+              $input.value = '';
+              $input.focus();
+            });
+          }
+
+          function setupJoinChat() {
+            document.getElementById('join-chat-form').addEventListener('submit', function(ev) {
+              ev.preventDefault();
+              this.hidden = true;
+              setupChat(document.getElementById('username').value);
+            });
+          }
+
+          setupJoinChat();
+        })();
       </script>
+      <style>
+        .chat {
+          max-width: 600px;
+          height: 400px;
+          margin: 0 auto;
+          padding: 16px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #edf2f7;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .chat .form-group {
+          margin-bottom: 8px;
+          position: relative;
+          display: inline-block;
+          text-align: left;
+        }
+
+        .chat .form-group:focus-within label {
+          color: teal;
+        }
+
+        .chat #join-chat-form {
+          text-align: center;
+        }
+
+        .chat #chat-body {
+          height: 100%;
+          display: none;
+          flex-flow: column;
+          max-width: 500px;
+          margin: 0 auto;
+        }
+
+        .chat #history {
+          flex: 1;
+          padding: 0;
+          list-style-type: none;
+          margin: 0;
+        }
+
+        .chat #history li {
+          display: block;
+        }
+
+        .chat #chat-form {
+          display: flex;
+          padding: 4px;
+        }
+
+        .chat #chat-form input {
+          flex: 1;
+        }
+
+        .chat button {
+          background-color: teal;
+          color: #efefef;
+          border: none;
+          padding: 8px 12px;
+          cursor: pointer;
+          user-select: none;
+          border-radius: 4px;
+        }
+
+        .chat input {
+          border: none;
+          border-bottom: 1px solid #bbbbbb;
+          padding: 6px 4px;
+          background-color: inherit;
+        }
+
+        .chat input:focus {
+          outline: none;
+          border-bottom: 1px solid teal;
+        }
+
+        .chat label {
+          display: block;
+          font-size: 0.8em;
+          padding-left: 4px;
+        }
+      </style>
     </main>
     <footer>
       <p>
