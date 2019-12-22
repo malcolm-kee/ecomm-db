@@ -152,7 +152,7 @@ setInterval(function pingClientsToEnsureAlive() {
     client.isAlive = false;
     client.ping(noop);
   });
-}, 1000);
+}, 30000);
 
 server.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
