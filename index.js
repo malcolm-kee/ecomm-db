@@ -80,14 +80,17 @@ server.ws('/chat', ws => {
 
   const reply = data => ws.send(JSON.stringify(data));
 
-  broadcast({
-    type: 'System',
-    message: 'New user joined',
-  });
+  broadcast(
+    {
+      type: 'System',
+      message: 'New user joined',
+    },
+    ws
+  );
 
   reply({
     type: 'System',
-    message: `There are ${expressWs.getWss().clients.size} users online.`,
+    message: `There are ${expressWs.getWss().clients.size - 1} users online.`,
   });
 
   ws.on('message', rawData => {
@@ -134,10 +137,10 @@ server.ws('/chat', ws => {
   ws.on('pong', heartbeat);
 });
 
-const broadcast = msg => {
+const broadcast = (msg, exclude) => {
   const msgPayload = JSON.stringify(msg);
   expressWs.getWss().clients.forEach(client => {
-    if (client.readyState === 1) {
+    if (client !== exclude && client.readyState === 1) {
       client.send(msgPayload);
     }
   });
