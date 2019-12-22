@@ -30,6 +30,7 @@
   "homepage": "https://github.com/malcolm-kee/ecomm-db#readme",
   "dependencies": {
     "bufferutil": "^4.0.1",
+    "date-fns": "^2.8.1",
     "express": "^4.17.1",
     "express-formidable": "^1.2.0",
     "express-ws": "^4.0.0",

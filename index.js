@@ -3,6 +3,7 @@ const path = require('path');
 const jsonServer = require('json-server');
 const express = require('express');
 const formidableMiddleware = require('express-formidable');
+const { format } = require('date-fns');
 const server = express();
 const expressWs = require('express-ws')(server);
 const middlewares = jsonServer.defaults({
@@ -41,11 +42,6 @@ server.put(
 
 server.use('/api', jsonServer.router(dbFile));
 
-// register chat user route -> return client id
-// send message using client id
-// remove client from cache when leave
-// ?? ping to ensure connection?
-
 /**
  * @typedef {Object} ChatMessage
  * @property {number} userId
@@ -53,6 +49,8 @@ server.use('/api', jsonServer.router(dbFile));
  */
 
 server.ws('/chat', ws => {
+  heartbeat.call(ws);
+
   let user = null;
 
   /**
@@ -80,9 +78,16 @@ server.ws('/chat', ws => {
       });
     });
 
+  const reply = data => ws.send(JSON.stringify(data));
+
   broadcast({
     type: 'System',
     message: 'New user joined',
+  });
+
+  reply({
+    type: 'System',
+    message: `There are ${expressWs.getWss().clients.size} users online.`,
   });
 
   ws.on('message', rawData => {
@@ -93,30 +98,30 @@ server.ws('/chat', ws => {
     if (typeof data.userId === 'number' && data.message) {
       getUser(data.userId)
         .then(sender => {
+          const date = new Date();
+
           broadcast({
             type: 'User',
             message: data.message,
             userName: sender.name,
             userId: data.userId,
+            dateTimestamp: date.getTime(),
+            displayedDate: format(date, 'HH:mm'),
           });
         })
         .catch(err => {
-          ws.send(
-            JSON.stringify({
-              type: 'System',
-              message: 'Invalid user',
-              payload: err,
-            })
-          );
+          reply({
+            type: 'System',
+            message: 'Invalid user',
+            payload: err,
+          });
         });
     } else {
-      ws.send(
-        JSON.stringify({
-          type: 'System',
-          message: 'Invalid message',
-          payload: rawData,
-        })
-      );
+      reply({
+        type: 'System',
+        message: 'Invalid message',
+        payload: rawData,
+      });
     }
   });
 
