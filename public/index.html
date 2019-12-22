@@ -48,7 +48,12 @@
         <form id="join-chat-form">
           <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" required id="username" />
+            <select id="username" required>
+              <option value="">Please select</option>
+              {{#users}}
+              <option value="{{id}}">{{name}}</option>
+              {{/users}}
+            </select>
           </div>
           <button type="submit">Join Chat</button>
         </form>
@@ -59,19 +64,21 @@
       </section>
       <script>
         (function chat() {
-          function setupChat(userName) {
+          function setupChat(userId) {
             document.getElementById('chat-body').style.display = 'flex';
             var wsHost = location.origin.replace(/^http/, 'ws') + '/chat';
             var ws = new WebSocket(wsHost);
             ws.onmessage = function(event) {
               const $li = document.createElement('li');
-              $li.innerHTML = event.data;
+              const $pre = document.createElement('pre');
+              $pre.innerHTML = JSON.stringify(JSON.parse(event.data), null, 2);
+              $li.append($pre);
               document.getElementById('history').prepend($li);
             };
             document.getElementById('chat-form').addEventListener('submit', function(ev) {
               ev.preventDefault();
               var $input = document.getElementById('msg');
-              ws.send(JSON.stringify({ userName: userName, msg: $input.value }));
+              ws.send(JSON.stringify({ userId: userId, message: $input.value }));
               $input.value = '';
               $input.focus();
             });
@@ -81,7 +88,8 @@
             document.getElementById('join-chat-form').addEventListener('submit', function(ev) {
               ev.preventDefault();
               this.hidden = true;
-              setupChat(document.getElementById('username').value);
+              var userId = Number(document.getElementById('username').value);
+              setupChat(userId);
             });
           }
 
@@ -129,6 +137,7 @@
           padding: 0;
           list-style-type: none;
           margin: 0;
+          overflow-y: auto;
         }
 
         .chat #history li {
@@ -154,7 +163,8 @@
           border-radius: 4px;
         }
 
-        .chat input {
+        .chat input,
+        .chat select {
           border: none;
           border-bottom: 1px solid #bbbbbb;
           padding: 6px 4px;

@@ -38,6 +38,7 @@
     "imagemin-pngquant": "^8.0.0",
     "imagemin-webp": "^5.1.0",
     "json-server": "^0.15.1",
+    "mustache": "^3.2.0",
     "utf-8-validate": "^5.0.2",
     "ws": "^7.2.1"
   },
@@ -47,6 +48,7 @@
     "@types/imagemin": "^7.0.0",
     "@types/imagemin-pngquant": "^7.0.0",
     "@types/mkdirp": "^0.5.2",
+    "@types/mustache": "^0.8.32",
     "@types/ncp": "^2.0.3",
     "@types/node": "^11.15.3",
     "@types/request": "^2.48.3",

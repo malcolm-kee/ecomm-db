@@ -1,5 +1,6 @@
 import fs from 'fs';
 import mkdirp from 'mkdirp';
+import mustache from 'mustache';
 import { ncp } from 'ncp';
 import path from 'path';
 import rimraf from 'rimraf';
@@ -14,7 +15,7 @@ import { createCommentDb } from './create-comment-db';
 import { createProductDb } from './create-product-db';
 import { createUserDb } from './create-user-db';
 import { processBannerImages } from './process-banner-images';
-import { DbBanner, DbComment, DbProduct, DbUser } from './type';
+import { DbBanner, DbComment, DbProduct, DbUser, User } from './type';
 import { writeImageFiles } from './write-images-files';
 
 function clean() {
@@ -96,6 +97,37 @@ function buildDb({
   });
 }
 
+function getHomepageTemplate() {
+  return new Promise<string>((fulfill, reject) => {
+    fs.readFile(path.resolve(publicSrcPath, 'index.html'), 'utf8', (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      return fulfill(data);
+    });
+  });
+}
+
+function overwriteHomepage(generatedHomepage: string) {
+  return new Promise((fulfill, reject) => {
+    fs.writeFile(path.resolve(publicPath, 'index.html'), generatedHomepage, err => {
+      if (err) {
+        return reject(err);
+      }
+      return fulfill();
+    });
+  });
+}
+
+async function generateHomepage(users: User[]) {
+  const homePageTemplate = await getHomepageTemplate();
+  await overwriteHomepage(
+    mustache.render(homePageTemplate, {
+      users,
+    })
+  );
+}
+
 async function build() {
   try {
     await clean();
@@ -106,6 +138,7 @@ async function build() {
       processBannerImages(),
     ]);
     const comments = createCommentDb(products, users);
+    await generateHomepage(users);
 
     const { bannerInfos, productsWithImages } = await writeImageFiles(products, bannerImageData);
 
