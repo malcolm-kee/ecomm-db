@@ -25,40 +25,38 @@ function clean() {
         console.error('rimraf error');
         return reject(rimrafErr);
       }
-      mkdirp(outputFolder, function afterMkdirP(mkdirErr) {
-        if (mkdirErr) {
+      mkdirp(outputFolder)
+        .then(fulfill)
+        .catch(mkdirErr => {
           console.error('create build folder error');
           reject(mkdirErr);
-        }
-        fulfill();
-      });
+        });
     });
   });
 }
 
 function setupPublicFolder() {
   return new Promise((fulfill, reject) => {
-    mkdirp(publicPath, function afterCreatePublicFolder(error) {
-      if (error) {
+    mkdirp(publicPath)
+      .then(() => {
+        ncp(publicSrcPath, publicPath, copyError => {
+          if (copyError) {
+            console.error('copy publicFolder error');
+            return reject(copyError);
+          }
+
+          mkdirp(imageOutputFolder)
+            .then(fulfill)
+            .catch(createImageFolderError => {
+              console.error('copy image publicFolder error');
+              return reject(createImageFolderError);
+            });
+        });
+      })
+      .catch(error => {
         console.error('create publicFolder error');
         return reject(error);
-      }
-
-      ncp(publicSrcPath, publicPath, copyError => {
-        if (copyError) {
-          console.error('copy publicFolder error');
-          return reject(copyError);
-        }
-
-        mkdirp(imageOutputFolder, function afterCreateImageFolder(createImageFolderError) {
-          if (createImageFolderError) {
-            console.error('copy image publicFolder error');
-            return reject(createImageFolderError);
-          }
-          fulfill();
-        });
       });
-    });
   });
 }
 

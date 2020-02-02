@@ -8,9 +8,9 @@ import { GenerateImageOption } from './type';
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
 
-function checkFileType(buffer: Buffer) {
+async function checkFileType(buffer: Buffer) {
   try {
-    const result = fileType(buffer);
+    const result = await fileType.fromBuffer(buffer);
     if (result) {
       console.info(result);
     }
