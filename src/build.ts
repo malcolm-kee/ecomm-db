@@ -79,6 +79,7 @@ function buildDb({
         comments,
         users,
         products,
+        chats: [],
       }),
       'utf8',
       function afterBuildDb(err) {

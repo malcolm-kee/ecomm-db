@@ -10,6 +10,7 @@ const middlewares = jsonServer.defaults({
   static: path.join(__dirname, 'build', 'public'),
   bodyParser: true,
 });
+const db = require('./db');
 
 const APP_NAME = process.env.HEROKU_APP_NAME;
 const PORT = process.env.PORT || 6366;
@@ -17,6 +18,36 @@ const app_base = APP_NAME ? `https://${APP_NAME}.herokuapp.com` : `http://localh
 
 const dbFile = path.join(__dirname, 'build', 'db.json');
 const uploadFolder = path.resolve(__dirname, 'build', 'public', 'uploads');
+
+/*
+  instead of each message will invoke independent save operation,
+  we will queue them in a buffer which only invokes every 100ms.
+*/
+let chatMessageBuffer = [];
+const queueChatMessage = (function() {
+  /**
+   * @type NodeJS.Timeout
+   */
+  let flushTimerId;
+  return function queue(message) {
+    chatMessageBuffer.push(message);
+    clearTimeout(flushTimerId);
+    flushTimerId = setTimeout(flushChatMessageBuffer, 100);
+  };
+})();
+const flushChatMessageBuffer = (function() {
+  let isIdle = true;
+  return async function flush() {
+    if (isIdle) {
+      isIdle = false;
+      const data = await db.getData();
+      data.chats = data.chats.concat(chatMessageBuffer);
+      chatMessageBuffer = [];
+      await db.saveData(data);
+      isIdle = true;
+    }
+  };
+})();
 
 if (!fs.existsSync(uploadFolder)) {
   fs.mkdirSync(uploadFolder);
@@ -63,19 +94,17 @@ server.ws('/chat', ws => {
         return fulfill(user);
       }
 
-      fs.readFile(dbFile, (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-        const db = JSON.parse(data);
-        const storedUser = db.users.find(user => user.id === userId);
-        if (storedUser) {
-          user = storedUser;
-          fulfill(storedUser);
-        } else {
-          return reject(new Error('Invalid user'));
-        }
-      });
+      db.getData()
+        .then(db => {
+          const storedUser = db.users.find(user => user.id === userId);
+          if (storedUser) {
+            user = storedUser;
+            fulfill(storedUser);
+          } else {
+            return reject(new Error('Invalid user'));
+          }
+        })
+        .catch(reject);
     });
 
   const reply = data => ws.send(JSON.stringify(data));
@@ -103,14 +132,18 @@ server.ws('/chat', ws => {
         .then(sender => {
           const date = new Date();
 
-          broadcast({
-            type: 'User',
-            message: data.message,
-            userName: sender.name,
-            userId: data.userId,
-            dateTimestamp: date.getTime(),
-            displayedDate: format(date, 'HH:mm'),
-          });
+          broadcast(
+            {
+              type: 'User',
+              message: data.message,
+              userName: sender.name,
+              userId: data.userId,
+              dateTimestamp: date.getTime(),
+              displayedDate: format(date, 'HH:mm'),
+            },
+            undefined,
+            true
+          );
         })
         .catch(err => {
           reply({
@@ -137,13 +170,17 @@ server.ws('/chat', ws => {
   ws.on('pong', heartbeat);
 });
 
-const broadcast = (msg, exclude) => {
+const broadcast = (msg, exclude, shouldSave = false) => {
   const msgPayload = JSON.stringify(msg);
   expressWs.getWss().clients.forEach(client => {
     if (client !== exclude && client.readyState === 1) {
       client.send(msgPayload);
     }
   });
+
+  if (shouldSave) {
+    queueChatMessage(msg);
+  }
 };
 
 function heartbeat() {
