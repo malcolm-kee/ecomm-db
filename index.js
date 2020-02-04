@@ -41,9 +41,15 @@ const flushChatMessageBuffer = (function() {
     if (isIdle) {
       isIdle = false;
       const data = await db.getData();
-      data.chats = data.chats.concat(chatMessageBuffer);
+      let currentId = data.chats.length;
+      data.chats = chatMessageBuffer
+        .map(message => Object.assign({}, { id: ++currentId }, message))
+        .reverse()
+        .concat(data.chats);
       chatMessageBuffer = [];
       await db.saveData(data);
+      // undocumented json server feature, refer https://github.com/typicode/json-server/issues/177#issuecomment-429209894
+      jsonServerRouter.db.read(dbFile);
       isIdle = true;
     }
   };
@@ -71,7 +77,9 @@ server.put(
   }
 );
 
-server.use('/api', jsonServer.router(dbFile));
+const jsonServerRouter = jsonServer.router(dbFile);
+
+server.use('/api', jsonServerRouter);
 
 /**
  * @typedef {Object} ChatMessage
