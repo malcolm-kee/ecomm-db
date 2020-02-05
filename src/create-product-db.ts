@@ -1,12 +1,12 @@
+import _ from 'lodash';
 import faker from 'faker';
-import fs from 'fs';
 import path from 'path';
-import { numOfProducts } from './constants';
+import { numOfProducts, imageOutputFolder, imagePublicPath } from './constants';
 import { getId } from './lib/get-id';
 import { isUrl } from './lib/is-url';
-import { processImage } from './process-image';
 import { products } from './products';
-import { ProcessedProduct, Product } from './type';
+import { Product, GenerateImageOption, ProductImageInfo, DbProduct } from './type';
+import { ImageProcessor } from './image-processor';
 
 function getRandomInteger(max: number) {
   return faker.random.number({
@@ -67,18 +67,6 @@ function associateRelatedProducts(product: Product, _: any, products: Product[])
   });
 }
 
-function isFileExist(filePath: string) {
-  return new Promise(fulfill => {
-    if (!filePath) return fulfill(false);
-    if (isUrl(filePath)) return fulfill(true);
-
-    fs.access(filePath, fs.constants.R_OK, err => {
-      if (err) return fulfill(false);
-      fulfill(true);
-    });
-  });
-}
-
 const Image_Size = {
   standard: {
     w: 600,
@@ -90,76 +78,96 @@ const Image_Size = {
   },
 };
 
-function processProductImage(imagePath: string) {
-  return processImage(imagePath, [
-    {
-      width: Image_Size.standard.w,
-      height: Image_Size.standard.h,
-      format: 'jpg',
-    },
-    {
-      width: Image_Size.standard.w,
-      height: Image_Size.standard.h,
-      format: 'webp',
-    },
-    {
-      width: Image_Size.thumb.w,
-      height: Image_Size.thumb.h,
-      format: 'jpg',
-    },
-    {
-      width: Image_Size.thumb.w,
-      height: Image_Size.thumb.h,
-      format: 'webp',
-    },
-    {
-      width: Image_Size.standard.w,
-      height: Image_Size.standard.h,
-      format: 'jpg',
-      blur: true,
-    },
-    {
-      width: Image_Size.thumb.w,
-      height: Image_Size.thumb.h,
-      format: 'jpg',
-      blur: true,
-    },
-  ]).then(([stdImg, webpImg, stdImgSmall, webpImgSmall, imgBlur, imgBlurSm]) => [
-    { size: 'standard', img: stdImg },
-    { size: 'webp', img: webpImg },
-    {
-      size: 'thumbStandard',
-      img: stdImgSmall,
-    },
-    { size: 'thumbWebp', img: webpImgSmall },
-    { size: 'blur', img: imgBlur },
-    { size: 'thumbBlur', img: imgBlurSm },
-  ]);
+function getProductImageData(product: Product) {
+  return {
+    imagePath:
+      product.image &&
+      (isUrl(product.image)
+        ? product.image
+        : path.resolve(__dirname, '..', 'images', product.image)),
+    options: [
+      {
+        name: 'standard',
+        width: Image_Size.standard.w,
+        height: Image_Size.standard.h,
+        format: 'jpg',
+      },
+      {
+        name: 'webp',
+        width: Image_Size.standard.w,
+        height: Image_Size.standard.h,
+        format: 'webp',
+      },
+      {
+        name: 'thumbStandard',
+        width: Image_Size.thumb.w,
+        height: Image_Size.thumb.h,
+        format: 'jpg',
+      },
+      {
+        name: 'thumbWebp',
+        width: Image_Size.thumb.w,
+        height: Image_Size.thumb.h,
+        format: 'webp',
+      },
+      {
+        name: 'blur',
+        width: Image_Size.standard.w,
+        height: Image_Size.standard.h,
+        format: 'jpg',
+        blur: true,
+      },
+      {
+        name: 'thumbBlur',
+        width: Image_Size.thumb.w,
+        height: Image_Size.thumb.h,
+        format: 'jpg',
+        blur: true,
+      },
+    ] as Array<GenerateImageOption & { name: string }>,
+  };
 }
 
-function processImages(product: Product) {
-  const imagePath =
-    product.image &&
-    (isUrl(product.image) ? product.image : path.resolve(__dirname, '..', 'images', product.image));
-
-  return isFileExist(imagePath).then(imageExist => {
-    if (imageExist) {
-      return processProductImage(imagePath);
-    } else {
-      return [];
-    }
-  });
-}
-
-export function createProductDb(): Promise<ProcessedProduct[]> {
+export function createProductDb(imageProcessor: ImageProcessor): DbProduct[] {
   const allProducts = products
     .concat(createFakeProducts(numOfProducts))
     .map(associateRelatedProducts);
   console.info('Created all products.');
-  console.info('Processing product images...');
-  return Promise.all(allProducts.map(processImages)).then(images =>
-    images.map((processedImgs, index) =>
-      Object.assign({}, allProducts[index], { imgs: processedImgs })
-    )
-  );
+
+  const result: DbProduct[] = [];
+  for (const product of allProducts) {
+    const imageData = getProductImageData(product);
+    const imageInfo: ProductImageInfo = {};
+    imageData.options.forEach(option => {
+      const imageFileName = `${_.kebabCase(product.name)}.${option.blur ? 'blur' : 'ori'}.${
+        option.height
+      }x${option.width}.${option.format}`;
+
+      imageProcessor.addImage({
+        imagePath: imageData.imagePath,
+        outputPath: `${imageOutputFolder}/${imageFileName}`,
+        option,
+      });
+      imageInfo[option.name] = `${imagePublicPath}${imageFileName}`;
+    });
+    result.push({
+      ...product,
+      images: imageInfo,
+    });
+  }
+
+  allProducts.forEach(product => {
+    const imageData = getProductImageData(product);
+    imageData.options.forEach(option => {
+      imageProcessor.addImage({
+        imagePath: imageData.imagePath,
+        outputPath: `${imageOutputFolder}/${_.kebabCase(product.name)}.${
+          option.blur ? 'blur' : 'ori'
+        }.${option.height}x${option.width}.${option.format}`,
+        option: option,
+      });
+    });
+  });
+
+  return result;
 }

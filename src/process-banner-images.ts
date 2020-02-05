@@ -1,6 +1,7 @@
 import glob from 'glob';
-import { processImage } from './process-image';
-import { ImageInfo, GenerateImageOption } from './type';
+import { imageOutputFolder, imagePublicPath } from './constants';
+import { ImageProcessor } from './image-processor';
+import { BannerInfo, GenerateImageOption } from './type';
 
 const bannerImageOptions: GenerateImageOption[] = [
   {
@@ -33,36 +34,43 @@ const bannerImageOptions: GenerateImageOption[] = [
   },
 ];
 
-export function processBannerImages(): Promise<ImageInfo[]> {
+export function processBannerImages(imgProcessor: ImageProcessor): Promise<BannerInfo[]> {
   return new Promise((fulfill, reject) => {
+    const result: BannerInfo[] = [];
+
     glob(__dirname + '/../images/banner**.jpg', function afterGlob(error, files) {
       if (error) return reject(error);
 
-      return Promise.all(
-        files.map(bannerImgPath =>
-          processImage(
-            bannerImgPath,
-            bannerImageOptions.reduce<GenerateImageOption[]>(
-              (result, option) =>
-                result.concat([
-                  option,
-                  {
-                    ...option,
-                    blur: true,
-                  },
-                ]),
-              []
-            )
-          )
-        )
-      )
-        .then(data =>
-          data.map(images => ({
-            images,
-          }))
-        )
-        .then(fulfill)
-        .catch(reject);
+      for (let index = 0; index < files.length; index++) {
+        const bannerImgPath = files[index];
+        const bannerInfo: BannerInfo = {};
+
+        bannerImageOptions.forEach(option => {
+          const imgName = `banner-${index}.${option.height}x${option.width}.${option.format}`;
+
+          const blurImgName = `banner-${index}-blur.${option.height}x${option.width}.${option.format}`;
+
+          imgProcessor.addImage({
+            imagePath: bannerImgPath,
+            outputPath: `${imageOutputFolder}/${imgName}`,
+            option,
+          });
+          imgProcessor.addImage({
+            imagePath: bannerImgPath,
+            outputPath: `${imageOutputFolder}/${blurImgName}`,
+            option: {
+              ...option,
+              blur: true,
+            },
+          });
+
+          bannerInfo[option.width] = `${imagePublicPath}${imgName}`;
+          bannerInfo[`${option.width}Blur`] = `${imagePublicPath}${blurImgName}`;
+        });
+        result.push(bannerInfo);
+      }
+
+      fulfill(result);
     });
   });
 }

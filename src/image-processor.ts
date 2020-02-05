@@ -1,34 +1,19 @@
-import fs from 'fs';
 import { EventEmitter } from 'events';
-import { Sharp } from 'sharp';
+import { isFileExist, writeFile } from './lib/fs-helper';
+import { generateImage, getSharp } from './process-image';
 import { GenerateImageOption } from './type';
-import { getSharp, generateImage } from './process-image';
-
-function writeFile(filePath: string, sharp: Sharp, buffer: Buffer | null) {
-  return new Promise((fulfill, reject) => {
-    const writeStream = fs.createWriteStream(filePath);
-    writeStream.once('error', reject);
-    writeStream.once('finish', fulfill);
-
-    if (buffer) {
-      writeStream.write(buffer);
-      writeStream.end();
-    } else {
-      sharp.pipe(writeStream);
-    }
-  });
-}
 
 export type ImageDetails = {
   imagePath: string;
   outputPath: string;
-  options: GenerateImageOption;
+  option: GenerateImageOption;
 };
 
 export class ImageProcessor extends EventEmitter {
   private stack: ImageDetails[] = [];
   private capacity: number = 5;
   private processing: number = 0;
+  private shouldLogProgress: boolean = false;
 
   constructor(capacity: number = 5) {
     super();
@@ -44,11 +29,17 @@ export class ImageProcessor extends EventEmitter {
     if (this.processing < this.capacity) {
       const image = this.stack.pop();
       if (image) {
+        if (this.shouldLogProgress) {
+          console.log(`Remaining: ${this.stack.length + this.processing}`);
+        }
         this.processing++;
         try {
-          const sharp = await getSharp(image.imagePath);
-          const processResult = await generateImage(sharp, image.options);
-          await writeFile(image.outputPath, processResult.sharp, processResult.buffer);
+          const imageExist = await isFileExist(image.imagePath);
+          if (imageExist) {
+            const sharp = await getSharp(image.imagePath);
+            const processResult = await generateImage(sharp, image.option);
+            await writeFile(image.outputPath, processResult.sharp, processResult.buffer);
+          }
         } catch (e) {
           console.error(`Error when processing image ${image.imagePath}`);
           console.error(e);
@@ -56,7 +47,7 @@ export class ImageProcessor extends EventEmitter {
           this.processing--;
           this.processNextImage();
         }
-      } else {
+      } else if (this.processing === 0) {
         this.emit('done');
       }
     }
@@ -64,5 +55,9 @@ export class ImageProcessor extends EventEmitter {
 
   get isEmpty() {
     return this.processing === 0;
+  }
+
+  logProgress() {
+    this.shouldLogProgress = true;
   }
 }

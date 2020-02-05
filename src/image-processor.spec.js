@@ -1,18 +1,18 @@
-import { createWriteStream } from 'fs';
-import { EventEmitter } from 'events';
 import { mocked } from 'ts-jest/utils';
 import createSharp from 'sharp';
 
 import { ImageProcessor } from './image-processor';
 
 import { getSharp, generateImage } from './process-image';
+import { isFileExist, writeFile } from './lib/fs-helper';
 
-jest.mock('fs');
 jest.mock('./process-image');
+jest.mock('./lib/fs-helper');
 
 const getSharpMock = mocked(getSharp);
 const generateImageMock = mocked(generateImage);
-const createWriteStreamMock = mocked(createWriteStream);
+const isFileExistMock = mocked(isFileExist);
+const writeFileMock = mocked(writeFile);
 
 describe(`ImageProcessor`, () => {
   beforeEach(() => {
@@ -33,19 +33,14 @@ describe(`ImageProcessor`, () => {
         buffer: Buffer.from('12345678'),
       })
     );
-    createWriteStreamMock.mockImplementationOnce(() => {
-      const stream = new EventEmitter();
-      stream.write = jest.fn();
-      stream.end = jest.fn();
-      setTimeout(() => stream.emit('finish'), 100);
-      return stream;
-    });
+    writeFileMock.mockImplementationOnce(() => Promise.resolve());
+    isFileExistMock.mockImplementationOnce(() => Promise.resolve(true));
 
     const processor = new ImageProcessor(5);
     processor.addImage(createImageData());
 
     processor.on('done', () => {
-      expect(createWriteStreamMock).toHaveBeenCalledTimes(1);
+      expect(writeFileMock).toHaveBeenCalledTimes(1);
 
       done();
     });
@@ -60,13 +55,8 @@ describe(`ImageProcessor`, () => {
         buffer: Buffer.from('12345678'),
       })
     );
-    createWriteStreamMock.mockImplementation(() => {
-      const stream = new EventEmitter();
-      stream.write = jest.fn();
-      stream.end = jest.fn();
-      setTimeout(() => stream.emit('finish'), 50);
-      return stream;
-    });
+    writeFileMock.mockImplementation(() => new Promise(fulfill => setTimeout(fulfill, 100)));
+    isFileExistMock.mockImplementation(() => Promise.resolve(true));
 
     const processor = new ImageProcessor(2);
 
@@ -82,7 +72,7 @@ describe(`ImageProcessor`, () => {
     }
 
     processor.on('done', () => {
-      expect(createWriteStreamMock).toHaveBeenCalledTimes(5);
+      expect(writeFileMock).toHaveBeenCalledTimes(5);
 
       done();
     });
