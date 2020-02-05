@@ -1,4 +1,3 @@
-import fileType from 'file-type';
 import imagemin from 'imagemin';
 import request from 'request';
 import sharp, { Sharp } from 'sharp';
@@ -7,17 +6,6 @@ import { GenerateImageOption } from './type';
 
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
-
-async function checkFileType(buffer: Buffer) {
-  try {
-    const result = await fileType.fromBuffer(buffer);
-    if (result) {
-      console.info(result);
-    }
-  } catch (e) {
-    console.error(`Error parsing filetype ${e}`);
-  }
-}
 
 export function getSharp(imagePath: string): Promise<Sharp> {
   return new Promise((fulfill, reject) => {
@@ -31,7 +19,6 @@ export function getSharp(imagePath: string): Promise<Sharp> {
           console.error(`Error downloading image: ${imagePath}`);
           return reject(err);
         }
-        checkFileType(bodyBuffer);
 
         return fulfill(sharp(bodyBuffer));
       });
