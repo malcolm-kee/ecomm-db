@@ -19,7 +19,7 @@ async function checkFileType(buffer: Buffer) {
   }
 }
 
-function getSharp(imagePath: string): Promise<Sharp> {
+export function getSharp(imagePath: string): Promise<Sharp> {
   return new Promise((fulfill, reject) => {
     if (isUrl(imagePath)) {
       request({ url: imagePath, encoding: null }, function afterRequest(
@@ -62,7 +62,7 @@ function compressWebp(pipeline: Sharp, { quality = 5 } = {}) {
   );
 }
 
-async function generateImage(
+export async function generateImage(
   img: Sharp,
   { width, height, format, blur = false, fit = 'contain', position }: GenerateImageOption
 ) {
