@@ -29,9 +29,6 @@ export class ImageProcessor extends EventEmitter {
     if (this.processing < this.capacity) {
       const image = this.stack.pop();
       if (image) {
-        if (this.shouldLogProgress) {
-          console.log(`Remaining: ${this.stack.length + this.processing}`);
-        }
         this.processing++;
         try {
           const imageExist = await isFileExist(image.imagePath);
@@ -45,6 +42,9 @@ export class ImageProcessor extends EventEmitter {
           console.error(e);
         } finally {
           this.processing--;
+          if (this.shouldLogProgress) {
+            console.log(`Remaining: ${this.stack.length + this.processing}`);
+          }
           this.processNextImage();
         }
       } else if (this.processing === 0) {
