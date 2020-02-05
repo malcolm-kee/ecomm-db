@@ -1,4 +1,3 @@
-import fileType from 'file-type';
 import imagemin from 'imagemin';
 import request from 'request';
 import sharp, { Sharp } from 'sharp';
@@ -8,38 +7,40 @@ import { GenerateImageOption } from './type';
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
 
-async function checkFileType(buffer: Buffer) {
-  try {
-    const result = await fileType.fromBuffer(buffer);
-    if (result) {
-      console.info(result);
-    }
-  } catch (e) {
-    console.error(`Error parsing filetype ${e}`);
-  }
-}
+export const getSharp = (function() {
+  const sharpMap = new Map<string, Sharp>();
 
-function getSharp(imagePath: string): Promise<Sharp> {
-  return new Promise((fulfill, reject) => {
-    if (isUrl(imagePath)) {
-      request({ url: imagePath, encoding: null }, function afterRequest(
-        err,
-        res,
-        bodyBuffer: Buffer
-      ) {
-        if (err) {
-          console.error(`Error downloading image: ${imagePath}`);
-          return reject(err);
-        }
-        checkFileType(bodyBuffer);
-
-        return fulfill(sharp(bodyBuffer));
-      });
-    } else {
-      return fulfill(sharp(imagePath));
+  return function getSharp(imagePath: string): Promise<Sharp> {
+    const prevSharp = sharpMap.get(imagePath);
+    if (prevSharp) {
+      return Promise.resolve(prevSharp.clone());
     }
-  });
-}
+
+    return new Promise((fulfill, reject) => {
+      if (isUrl(imagePath)) {
+        request({ url: imagePath, encoding: null }, function afterRequest(
+          err,
+          res,
+          bodyBuffer: Buffer
+        ) {
+          if (err) {
+            console.error(`Error downloading image: ${imagePath}`);
+            return reject(err);
+          }
+
+          const newSharp = sharp(bodyBuffer);
+          sharpMap.set(imagePath, newSharp);
+
+          return fulfill(newSharp);
+        });
+      } else {
+        const newSharp = sharp(imagePath);
+        sharpMap.set(imagePath, newSharp);
+        return fulfill(newSharp);
+      }
+    });
+  };
+})();
 
 function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
   return pipeline.toBuffer().then(sharpBuffer =>
@@ -62,7 +63,7 @@ function compressWebp(pipeline: Sharp, { quality = 5 } = {}) {
   );
 }
 
-async function generateImage(
+export async function generateImage(
   img: Sharp,
   { width, height, format, blur = false, fit = 'contain', position }: GenerateImageOption
 ) {
@@ -103,15 +104,4 @@ async function generateImage(
     blur,
     buffer: compressedBuffer,
   };
-}
-
-export async function processImage(
-  imagePath: string,
-  imageGenerationOptions: GenerateImageOption[]
-) {
-  console.log(`Processing image for ${imagePath}`);
-
-  const sharp = await getSharp(imagePath);
-
-  return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
 }

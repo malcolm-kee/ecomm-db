@@ -14,9 +14,9 @@ import {
 import { createCommentDb } from './create-comment-db';
 import { createProductDb } from './create-product-db';
 import { createUserDb } from './create-user-db';
+import { ImageProcessor } from './image-processor';
 import { processBannerImages } from './process-banner-images';
 import { DbBanner, DbComment, DbProduct, DbUser, User } from './type';
-import { writeImageFiles } from './write-images-files';
 
 function clean() {
   return new Promise(function(fulfill, reject) {
@@ -129,19 +129,27 @@ async function generateHomepage(users: User[]) {
 
 async function build() {
   try {
+    const imageProcessor = new ImageProcessor(15);
+
     await clean();
     await setupPublicFolder();
-    const [products, users, bannerImageData] = await Promise.all([
-      createProductDb(),
+    const [products, users, banners] = await Promise.all([
+      createProductDb(imageProcessor),
       createUserDb(numOfUsers),
-      processBannerImages(),
+      processBannerImages(imageProcessor),
     ]);
     const comments = createCommentDb(products, users);
     await generateHomepage(users);
 
-    const { bannerInfos, productsWithImages } = await writeImageFiles(products, bannerImageData);
+    await buildDb({ banners, products, users, comments });
 
-    await buildDb({ banners: bannerInfos, products: productsWithImages, users, comments });
+    if (!imageProcessor.isEmpty) {
+      console.log(`Waiting image generations...`);
+      imageProcessor.logProgress();
+      imageProcessor.on('done', () => {
+        console.log(`Image generation done`);
+      });
+    }
   } catch (err) {
     console.error(err);
   }
