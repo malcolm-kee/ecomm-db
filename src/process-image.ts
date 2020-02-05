@@ -7,26 +7,40 @@ import { GenerateImageOption } from './type';
 const imageminMozjpeg = require(`imagemin-mozjpeg`);
 const imageminWebp = require(`imagemin-webp`);
 
-export function getSharp(imagePath: string): Promise<Sharp> {
-  return new Promise((fulfill, reject) => {
-    if (isUrl(imagePath)) {
-      request({ url: imagePath, encoding: null }, function afterRequest(
-        err,
-        res,
-        bodyBuffer: Buffer
-      ) {
-        if (err) {
-          console.error(`Error downloading image: ${imagePath}`);
-          return reject(err);
-        }
+export const getSharp = (function() {
+  const sharpMap = new Map<string, Sharp>();
 
-        return fulfill(sharp(bodyBuffer));
-      });
-    } else {
-      return fulfill(sharp(imagePath));
+  return function getSharp(imagePath: string): Promise<Sharp> {
+    const prevSharp = sharpMap.get(imagePath);
+    if (prevSharp) {
+      return Promise.resolve(prevSharp.clone());
     }
-  });
-}
+
+    return new Promise((fulfill, reject) => {
+      if (isUrl(imagePath)) {
+        request({ url: imagePath, encoding: null }, function afterRequest(
+          err,
+          res,
+          bodyBuffer: Buffer
+        ) {
+          if (err) {
+            console.error(`Error downloading image: ${imagePath}`);
+            return reject(err);
+          }
+
+          const newSharp = sharp(bodyBuffer);
+          sharpMap.set(imagePath, newSharp);
+
+          return fulfill(newSharp);
+        });
+      } else {
+        const newSharp = sharp(imagePath);
+        sharpMap.set(imagePath, newSharp);
+        return fulfill(newSharp);
+      }
+    });
+  };
+})();
 
 function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
   return pipeline.toBuffer().then(sharpBuffer =>
@@ -90,15 +104,4 @@ export async function generateImage(
     blur,
     buffer: compressedBuffer,
   };
-}
-
-export async function processImage(
-  imagePath: string,
-  imageGenerationOptions: GenerateImageOption[]
-) {
-  console.log(`Processing image for ${imagePath}`);
-
-  const sharp = await getSharp(imagePath);
-
-  return Promise.all(imageGenerationOptions.map(option => generateImage(sharp, option)));
 }

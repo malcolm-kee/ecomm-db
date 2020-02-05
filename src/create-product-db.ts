@@ -136,38 +136,32 @@ export function createProductDb(imageProcessor: ImageProcessor): DbProduct[] {
 
   const result: DbProduct[] = [];
   for (const product of allProducts) {
-    const imageData = getProductImageData(product);
-    const imageInfo: ProductImageInfo = {};
-    imageData.options.forEach(option => {
-      const imageFileName = `${_.kebabCase(product.name)}.${option.blur ? 'blur' : 'ori'}.${
-        option.height
-      }x${option.width}.${option.format}`;
+    if (product.image) {
+      const imageData = getProductImageData(product);
+      const imageInfo: ProductImageInfo = {};
+      imageData.options.forEach(option => {
+        const imageFileName = `${_.kebabCase(product.name)}.${option.blur ? 'blur' : 'ori'}.${
+          option.height
+        }x${option.width}.${option.format}`;
 
-      imageProcessor.addImage({
-        imagePath: imageData.imagePath,
-        outputPath: `${imageOutputFolder}/${imageFileName}`,
-        option,
+        imageProcessor.addImage({
+          imagePath: imageData.imagePath,
+          outputPath: `${imageOutputFolder}/${imageFileName}`,
+          option,
+        });
+        imageInfo[option.name] = `${imagePublicPath}${imageFileName}`;
       });
-      imageInfo[option.name] = `${imagePublicPath}${imageFileName}`;
-    });
-    result.push({
-      ...product,
-      images: imageInfo,
-    });
+      result.push({
+        ...product,
+        images: imageInfo,
+      });
+    } else {
+      result.push({
+        ...product,
+        images: null,
+      });
+    }
   }
-
-  allProducts.forEach(product => {
-    const imageData = getProductImageData(product);
-    imageData.options.forEach(option => {
-      imageProcessor.addImage({
-        imagePath: imageData.imagePath,
-        outputPath: `${imageOutputFolder}/${_.kebabCase(product.name)}.${
-          option.blur ? 'blur' : 'ori'
-        }.${option.height}x${option.width}.${option.format}`,
-        option: option,
-      });
-    });
-  });
 
   return result;
 }

@@ -29,7 +29,7 @@ export const products: Product[] = [
     id: 4,
     name: 'dodo',
     descriptions: [],
-    image: 'dono.png',
+    image: '',
     department: 'Food',
     price: '2.50',
   },
