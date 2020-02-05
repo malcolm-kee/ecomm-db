@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import { imageOutputFolder, imagePublicPath } from './constants';
@@ -43,7 +44,14 @@ async function writeImagesForProduct(product: ProcessedProduct) {
 }
 
 async function writeAllProductImages(products: ProcessedProduct[]) {
-  const allImages = await Promise.all(products.map(writeImagesForProduct));
+  const chunks = _.chunk(products, 20);
+  let allImages: Array<ProductImageInfo | null> = [];
+
+  for (const chunk of chunks) {
+    const images = await Promise.all(chunk.map(writeImagesForProduct));
+    allImages = allImages.concat(images);
+  }
+
   return allImages.map((images, index) => {
     const { imgs: _, ...productData } = products[index];
     return {
@@ -55,21 +63,16 @@ async function writeAllProductImages(products: ProcessedProduct[]) {
 
 async function writeImagesForBanner(banner: ImageInfo, index: number) {
   const imageMap: BannerInfo = {};
-  const writeFilesPromises: Promise<unknown>[] = [];
 
-  banner.images.forEach(image => {
+  for (const image of banner.images) {
     const imgName = `banner-${index}${image.blur ? '-blur' : ''}.${image.height}x${image.width}.${
       image.format
     }`;
-
-    writeFilesPromises.push(writeFileToImgFolder(imgName, image.sharp, image.buffer));
+    await writeFileToImgFolder(imgName, image.sharp, image.buffer);
 
     const key = image.blur ? image.width + 'Blur' : image.width;
-
     imageMap[key] = mapImagePath(imgName);
-  });
-
-  await Promise.all(writeFilesPromises);
+  }
 
   return imageMap;
 }

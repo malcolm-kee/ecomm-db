@@ -39,6 +39,7 @@
     "imagemin-pngquant": "^8.0.0",
     "imagemin-webp": "^5.1.0",
     "json-server": "^0.15.1",
+    "lodash": "^4.17.15",
     "mustache": "^4.0.0",
     "utf-8-validate": "^5.0.2",
     "ws": "^7.2.1"
@@ -48,6 +49,7 @@
     "@types/glob": "^7.1.1",
     "@types/imagemin": "^7.0.0",
     "@types/imagemin-pngquant": "^7.0.0",
+    "@types/lodash": "^4.14.149",
     "@types/mustache": "^4.0.0",
     "@types/ncp": "^2.0.3",
     "@types/node": "^13.7.0",
