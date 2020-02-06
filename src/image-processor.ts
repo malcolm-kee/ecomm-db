@@ -35,7 +35,7 @@ export class ImageProcessor extends EventEmitter {
           if (imageExist) {
             const sharp = await getSharp(image.imagePath);
             const processResult = await generateImage(sharp, image.option);
-            await writeFile(image.outputPath, processResult.sharp, processResult.buffer);
+            await writeFile(image.outputPath, processResult.buffer);
           }
         } catch (e) {
           console.error(`Error when processing image ${image.imagePath}`);

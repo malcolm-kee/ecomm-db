@@ -29,7 +29,6 @@ describe(`ImageProcessor`, () => {
     mocked(getSharpMock).mockImplementationOnce(() => Promise.resolve(sharp));
     generateImageMock.mockImplementationOnce(() =>
       Promise.resolve({
-        sharp,
         buffer: Buffer.from('12345678'),
       })
     );
@@ -51,7 +50,6 @@ describe(`ImageProcessor`, () => {
     mocked(getSharpMock).mockImplementation(() => Promise.resolve(sharp));
     generateImageMock.mockImplementation(() =>
       Promise.resolve({
-        sharp,
         buffer: Buffer.from('12345678'),
       })
     );

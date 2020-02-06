@@ -9,7 +9,7 @@
     "pack:watch": "webpack --watch",
     "build": "node dist/build.js",
     "build:local": "cross-env IS_DEV=true node dist/build.js",
-    "heroku-postbuild": "npm run test:ci && npm run pack && npm run build",
+    "heroku-postbuild": "npm run pack && npm run build",
     "test": "jest --watch",
     "test:ci": "jest --ci --watchAll=false --coverage",
     "typecheck": "tsc --noEmit"

@@ -75,7 +75,6 @@ export async function generateImage(
     });
 
     return {
-      sharp,
       width,
       height,
       format,
@@ -97,7 +96,6 @@ export async function generateImage(
   const compressedBuffer = format === 'jpg' ? await compressJpg(sharp) : await compressWebp(sharp);
 
   return {
-    sharp,
     width,
     height,
     format,
