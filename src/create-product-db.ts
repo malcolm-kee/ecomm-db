@@ -1,12 +1,12 @@
-import _ from 'lodash';
 import faker from 'faker';
+import _ from 'lodash';
 import path from 'path';
-import { numOfProducts, imageOutputFolder, imagePublicPath } from './constants';
+import { imageOutputFolder, imagePublicPath, numOfProducts } from './constants';
+import { ImageProcessor } from './image-processor';
 import { getId } from './lib/get-id';
 import { isUrl } from './lib/is-url';
 import { products } from './products';
-import { Product, GenerateImageOption, ProductImageInfo, DbProduct } from './type';
-import { ImageProcessor } from './image-processor';
+import { DbProduct, GenerateImageOption, Product, ProductImageInfo } from './type';
 
 function getRandomInteger(max: number) {
   return faker.random.number({
@@ -25,12 +25,15 @@ function getProductImage() {
       case 1:
         return `https://placeimg.com/700/700/tech`;
 
+      case 2:
+        return `https://source.unsplash.com/random/700x700`;
+
       default:
         return `https://placeimg.com/700/700/nature`;
     }
   }
 
-  return getImage(getRandomInteger(1));
+  return getImage(getRandomInteger(2));
 }
 
 function createFakeProduct(): Product {

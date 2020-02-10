@@ -4,43 +4,32 @@ import sharp, { Sharp } from 'sharp';
 import { isUrl } from './lib/is-url';
 import { GenerateImageOption } from './type';
 
-const imageminMozjpeg = require(`imagemin-mozjpeg`);
-const imageminWebp = require(`imagemin-webp`);
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminWebp = require('imagemin-webp');
 
-export const getSharp = (function() {
-  const sharpMap = new Map<string, Sharp>();
+export function getSharp(imagePath: string) {
+  return new Promise<Sharp>((fulfill, reject) => {
+    if (isUrl(imagePath)) {
+      request({ url: imagePath, encoding: null }, function afterRequest(
+        err,
+        _,
+        bodyBuffer: Buffer
+      ) {
+        if (err) {
+          console.error(`Error downloading image: ${imagePath}`);
+          return reject(err);
+        }
 
-  return function getSharp(imagePath: string): Promise<Sharp> {
-    const prevSharp = sharpMap.get(imagePath);
-    if (prevSharp) {
-      return Promise.resolve(prevSharp.clone());
-    }
+        const newSharp = sharp(bodyBuffer);
 
-    return new Promise((fulfill, reject) => {
-      if (isUrl(imagePath)) {
-        request({ url: imagePath, encoding: null }, function afterRequest(
-          err,
-          res,
-          bodyBuffer: Buffer
-        ) {
-          if (err) {
-            console.error(`Error downloading image: ${imagePath}`);
-            return reject(err);
-          }
-
-          const newSharp = sharp(bodyBuffer);
-          sharpMap.set(imagePath, newSharp);
-
-          return fulfill(newSharp);
-        });
-      } else {
-        const newSharp = sharp(imagePath);
-        sharpMap.set(imagePath, newSharp);
         return fulfill(newSharp);
-      }
-    });
-  };
-})();
+      });
+    } else {
+      const newSharp = sharp(imagePath);
+      return fulfill(newSharp);
+    }
+  });
+}
 
 function compressJpg(pipeline: Sharp, { quality = 30 } = {}) {
   return pipeline.toBuffer().then(sharpBuffer =>
