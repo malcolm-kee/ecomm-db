@@ -80,9 +80,12 @@ const jsonServerRouter = jsonServer.router(dbFile);
 
 server.use('/api', jsonServerRouter);
 
-server.get('/latestChat', (_, res) => {
+server.get('/chats', (req, res) => {
+  const { count = 10, before } = req.query;
   db.getData()
-    .then(db => res.json(db.chats.slice(-10)))
+    .then(db =>
+      res.json((before ? db.chats.filter(chat => chat.id < before) : db.chats).slice(-count))
+    )
     .catch(error =>
       res.status(500).json({
         message: 'Internal Server Error',

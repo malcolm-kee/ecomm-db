@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "pack": "webpack",
     "pack:watch": "webpack --watch",
     "build": "node dist/build.js",
@@ -67,6 +68,7 @@
     "jest": "^25.1.0",
     "mkdirp": "^1.0.3",
     "ncp": "^2.0.0",
+    "nodemon": "^2.0.2",
     "request": "^2.88.0",
     "rimraf": "^3.0.1",
     "sharp": "^0.23.4",
