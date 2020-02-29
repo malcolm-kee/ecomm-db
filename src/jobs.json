@@ -1,5 +1,6 @@
 [
     {
+        "id": 404,
         "title": "Web Designer",
         "department": "UI / UX Design",
         "level": "experienced",
@@ -21,6 +22,7 @@
         ]
     },
     {
+        "id": 403,
         "title": "Customer Service Agent",
         "department": "Operations",
         "level": "entry",
@@ -44,6 +46,7 @@
         ]
     },
     {
+        "id": 200,
         "title": "Janitor",
         "department": "Health/Wellfare",
         "level": "experienced",
@@ -62,6 +65,7 @@
         ]
     },
     {
+        "id": 500,
         "title": "GitHub Issue Commentor",
         "department": "Engineering",
         "level": "internship",
@@ -77,6 +81,7 @@
         ]
     },
     {
+        "id": 700,
         "title": "Recruiter",
         "department": "Human Resources",
         "level": "experienced",
@@ -88,11 +93,12 @@
         ],
         "requirements": [
             "Good-looking is mandatory. Normal looking can be considered if you have a nice voice and good Photoshop skill (Instagram filter doesn't count, it's too common so everyone can tell at once).",
-            "Good email writing skill is preferred, but bad in writing other stuffs. This is to attract candidates before they join and confuse them when they are hired.",
-            "Experience in gaming/geek culture is a plus."
+            "Good in writing email and bad in writing other stuffs. This is to attract candidates before they join and confuse them when they are hired.",
+            "Genuine interest to other people and good in making others talking."
         ]
     },
     {
+        "id": 3,
         "title": "Slack Chatter",
         "department": "Engineering",
         "level": "entry",
@@ -108,6 +114,7 @@
         ]
     },
     {
+        "id": 36,
         "title": "Memer",
         "department": "UI / UX Design",
         "level": "experienced",

@@ -65,6 +65,7 @@ export interface ProductImageInfo {
 }
 
 export interface JobPosting {
+  id: number;
   title: string;
   department: string;
   level: 'internship' | 'entry' | 'experienced' | 'manager';
