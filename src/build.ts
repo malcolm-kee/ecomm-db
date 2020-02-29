@@ -66,6 +66,7 @@ function buildDb({
   banners,
   users,
   comments,
+  jobs,
 }: {
   products: DbProduct[];
   banners: DbBanner[];
@@ -81,6 +82,7 @@ function buildDb({
         comments,
         users,
         products,
+        jobs,
         chats: [],
       }),
       'utf8',
