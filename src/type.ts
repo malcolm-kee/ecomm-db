@@ -64,6 +64,15 @@ export interface ProductImageInfo {
   [imageType: string]: string;
 }
 
+export interface JobPosting {
+  title: string;
+  department: string;
+  level: 'internship' | 'entry' | 'experienced' | 'manager';
+  summary: string;
+  descriptions: string[];
+  requirements: string[];
+}
+
 export interface DbProduct extends Product {
   related: number[];
   images: ProductImageInfo | null;

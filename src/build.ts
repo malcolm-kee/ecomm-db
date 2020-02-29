@@ -16,7 +16,8 @@ import { createProductDb } from './create-product-db';
 import { createUserDb } from './create-user-db';
 import { ImageProcessor } from './image-processor';
 import { processBannerImages } from './process-banner-images';
-import { DbBanner, DbComment, DbProduct, DbUser, User } from './type';
+import { DbBanner, DbComment, DbProduct, DbUser, User, JobPosting } from './type';
+import jobPostings from './jobs.json';
 
 function clean() {
   return new Promise(function(fulfill, reject) {
@@ -70,6 +71,7 @@ function buildDb({
   banners: DbBanner[];
   users: DbUser[];
   comments: DbComment[];
+  jobs: JobPosting[];
 }) {
   return new Promise(function(fulfill, reject) {
     fs.writeFile(
@@ -141,7 +143,7 @@ async function build() {
     const comments = createCommentDb(products, users);
     await generateHomepage(users);
 
-    await buildDb({ banners, products, users, comments });
+    await buildDb({ banners, products, users, comments, jobs: jobPostings as JobPosting[] });
 
     if (!imageProcessor.isEmpty) {
       console.log(`Waiting image generations...`);
