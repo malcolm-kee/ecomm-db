@@ -35,7 +35,7 @@
   "dependencies": {
     "bufferutil": "^4.0.1",
     "date-fns": "^2.11.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-formidable": "^1.2.0",
     "express-ws": "^4.0.0",
     "imagemin": "^7.0.1",
